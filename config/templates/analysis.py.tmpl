@@ -1,0 +1,33 @@
+# analysis.py — Auto-PsyNet preregistered analysis for {{LABEL}}.
+# Executes the LOCKED §6 analysis on the exported data. Edit ONLY to match §6; any deviation must be
+# logged in .apsy/decisions.md (G6 checks analysis-matched-plan). Numbers come ONLY from this executed
+# run — never narrate or invent results.
+# Run via:  bin/apsy-analyze.sh   (or:  python analysis.py <data_dir>)
+import json
+import pathlib
+import sys
+
+import pandas as pd
+
+DATA = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "data")   # dir of per-class CSVs (PsyNet export)
+OUT = pathlib.Path(".apsy/analysis"); OUT.mkdir(parents=True, exist_ok=True)
+
+# --- Load (one CSV per most-specific class; e.g. {{TRIAL_CSV}}) -------------------------------------
+trials = pd.read_csv(DATA / "{{TRIAL_CSV}}")
+
+# --- Preregistered exclusions (§6 / G5) ------------------------------------------------------------
+# trials = trials[trials["failed"] != True]
+# {{EXCLUSIONS}}
+
+# --- Preregistered model (§6 — LOCKED) -------------------------------------------------------------
+# Fill with the locked model. Example (nested accuracy — trials within participants):
+#   import statsmodels.formula.api as smf
+#   m = smf.mixedlm("{{DV}} ~ {{IV}}", trials, groups=trials["participant_id"]).fit()
+#   beta = float(m.params["{{IV}}"]); lo, hi = (float(x) for x in m.conf_int().loc["{{IV}}"])
+#   results = {"effect": beta, "ci95": [lo, hi], "p": float(m.pvalues["{{IV}}"]), "n": int(trials["participant_id"].nunique())}
+results = {{RESULTS_EXPR}}
+
+# --- Persist effects + CIs (+ a figure) ------------------------------------------------------------
+(OUT / "results.json").write_text(json.dumps(results, indent=2, default=str))
+print(json.dumps(results, indent=2, default=str))
+# Save the primary figure (e.g. group means ± 95% CI) to OUT / "fig_primary.png" with matplotlib.

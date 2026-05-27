@@ -1,0 +1,51 @@
+# Auto-PsyNet — persona routing registry
+# Maps pipeline stages → personas, and records each persona's binding. The orchestrator (ambient Claude
+# Code) dispatches these as subagents. See project-plan/04-skills-agents-commands.md §4.2.
+
+version: 0.0.1
+
+# Which personas lead / assist each pipeline stage (gate in brackets).
+phase_defaults:
+  formulate:        # → G1
+    primary: methodologist
+    assist: [statistician]
+  build:            # → G2
+    primary: psynet-engineer
+    assist: []
+  pilot_deploy:     # → G3 / G4
+    primary: psynet-engineer
+    assist: [statistician, data-analyst]
+  analyze:          # → G5 / G6 / G7
+    primary: statistician
+    assist: [data-analyst]
+  publish:
+    primary: science-writer
+    assist: [statistician]
+
+# Per-persona metadata. model: the ambient Claude model unless an external review provider is configured.
+# permissionMode: plan = read-only; acceptEdits = may write; default = standard.
+agents:
+  methodologist:
+    file: methodologist.md
+    phases: [formulate]
+    permissionMode: plan
+  statistician:
+    file: statistician.md
+    phases: [formulate, analyze]
+    permissionMode: default
+  psynet-engineer:
+    file: psynet-engineer.md
+    phases: [build, pilot_deploy]
+    permissionMode: acceptEdits
+  science-writer:
+    file: science-writer.md
+    phases: [publish]
+    permissionMode: acceptEdits
+  data-analyst:
+    file: data-analyst.md
+    phases: [pilot_deploy, analyze]
+    permissionMode: default
+
+# Personas planned for later phases (authored as the roadmap reaches them):
+#   literature-scholar, adversarial-reviewer, code-reviewer, debugger
+roadmap_personas: [literature-scholar, adversarial-reviewer]

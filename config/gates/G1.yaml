@@ -1,0 +1,30 @@
+# G1 — Plan Verified. Scored rubric run by plan-review at the end of FORMULATE. Pulls hard/advisory
+# items from config/ethics-policy.md (§1 ethics, §2 integrity). levels: hard (blocks) | advisory (flag+ack).
+gate: G1
+name: Plan Verified
+items:
+  - id: construct_validity
+    check: "IV/DV are sound operationalizations of the constructs"
+    level: advisory
+  - id: internal_validity
+    check: "confounds controlled; counterbalancing + randomization specified"
+    level: advisory
+  - id: statistical_power
+    check: "power justification present; not knowingly underpowered (ethics §2.3)"
+    level: advisory
+  - id: analysis_locked
+    check: "preregistered analysis plan specified and locked, held as a holdout (ethics §2.1)"
+    level: hard
+  - id: paradigm_feasible
+    check: "the chosen PsyNet paradigm can actually implement the design"
+    level: hard
+  - id: consent_present
+    check: "a consent module is first in the timeline (ethics §1.1)"
+    level: hard
+  - id: compensation_floor
+    check: "target pay >= wage floor, default $10/hr (ethics §1.3)"
+    level: hard
+  - id: ethics_review
+    check: "deception+debrief, vulnerable populations, PII reviewed (ethics §1.4-1.7)"
+    level: mixed   # deception-without-debrief & vulnerable-pops are hard; PII is advisory
+pass_when: "no hard item fails; advisory failures acknowledged and logged in decisions.md"

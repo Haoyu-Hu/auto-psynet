@@ -1,0 +1,16 @@
+# G4 — Deploy Approved. HARD gate before ANY real human deployment/recruitment. Never auto-passed at any
+# autonomy level. Enforced by hooks/spend-gate.sh + the deploy skill. See config/ethics-policy.md §1.2,§3.
+gate: G4
+name: Deploy Approved
+hard: true
+requires:
+  - id: human_approval
+    check: "explicit human approval to spend money and recruit real participants"
+  - id: irb_attestation
+    check: "researcher attests Cornell IRB approval or exemption (ethics §1.2)"
+  - id: spend_cap
+    check: "spend cap configured in .apsy/state.json (spend.cap_usd > 0)"
+  - id: build_pilot_green
+    check: "G2 (build) and G3 (pilot) already passed"
+on_pass: "export APSY_DEPLOY_APPROVED=1 for the deploy action; record the attestation in deployment-log.md"
+on_fail: "block — spend-gate.sh denies `psynet deploy` / recruiter open"

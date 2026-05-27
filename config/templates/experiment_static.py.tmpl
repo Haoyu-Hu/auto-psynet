@@ -1,0 +1,81 @@
+# experiment.py — Auto-PsyNet (static-trial paradigm). Generated from .apsy/research-plan.md.
+# Fill every {{PLACEHOLDER}}. Respect the PsyNet gotchas: time_estimate on every Page/Trial; unique
+# Module/TrialMaker id_; bot_response on every Control; static uses nodes=; Markup() for HTML; consent
+# first. Worked reference: materials/psynet/demos/experiments/static/experiment.py.
+import psynet.experiment
+from markupsafe import Markup
+from psynet.consent import MainConsent
+from psynet.modular_page import ModularPage, PushButtonControl
+from psynet.page import InfoPage
+from psynet.timeline import Timeline
+from psynet.trial.static import StaticNode, StaticTrial, StaticTrialMaker
+
+# --- Stimuli → nodes -------------------------------------------------------
+# One StaticNode per stimulus; `definition` holds whatever the trial renders.
+STIMULI = {{STIMULI_LIST}}        # e.g. [{"prompt": "How pleasant is this?", "id": "s1"}, ...]
+nodes = [StaticNode(definition=stim, block="main") for stim in STIMULI]
+
+
+# --- Trial -----------------------------------------------------------------
+class {{TRIAL_CLASS}}(StaticTrial):
+    time_estimate = {{TRIAL_TIME}}        # seconds — REQUIRED
+
+    def show_trial(self, experiment, participant):
+        d = self.definition
+        return ModularPage(
+            "trial",
+            Markup(d["prompt"]),
+            PushButtonControl(
+                choices={{CHOICES}},
+                bot_response={{BOT_RESPONSE}},   # REQUIRED so bot tests pass
+            ),
+            time_estimate=self.time_estimate,
+        )
+
+    # Optional overrides: score_answer / compute_performance_reward / show_feedback.
+
+
+class {{TRIAL_MAKER_CLASS}}(StaticTrialMaker):
+    pass
+
+
+# --- Recruitment -----------------------------------------------------------
+def get_prolific_settings():
+    return {
+        "recruiter": "{{RECRUITER}}",
+        "base_payment": {{BASE_PAYMENT}},
+        "prolific_estimated_completion_minutes": {{EST_MINUTES}},
+        "wage_per_hour": {{WAGE_PER_HOUR}},
+    }
+
+recruiter_settings = get_prolific_settings()
+
+
+# --- Experiment ------------------------------------------------------------
+class Exp(psynet.experiment.Experiment):
+    label = "{{LABEL}}"
+
+    config = {
+        "initial_recruitment_size": {{INITIAL_RECRUITMENT_SIZE}},
+        **recruiter_settings,
+    }
+
+    test_n_bots = {{N_BOTS}}
+
+    timeline = Timeline(
+        MainConsent(),
+        InfoPage(Markup("{{INSTRUCTIONS_HTML}}"), time_estimate=5),
+        {{TRIAL_MAKER_CLASS}}(
+            id_="{{TRIAL_MAKER_ID}}",
+            trial_class={{TRIAL_CLASS}},
+            nodes=nodes,
+            expected_trials_per_participant={{N_TRIALS_PER_PARTICIPANT}},
+            max_trials_per_block={{N_TRIALS_PER_PARTICIPANT}},
+            recruit_mode="n_participants",
+            target_n_participants={{TARGET_N}},
+        ),
+        InfoPage(Markup("{{DEBRIEF_HTML}}"), time_estimate=3),
+    )
+
+    def test_check_bot(self, bot):
+        assert not bot.failed

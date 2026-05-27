@@ -1,0 +1,19 @@
+{
+  "name": "apsy",
+  "version": "0.0.1",
+  "description": "Auto-PsyNet — automate the lifecycle of online behavioral experiments on PsyNet: idea → verified plan → experiment code → LLM-pilot + human deployment → analysis → paper. Run /apsy:setup.",
+  "author": {
+    "name": "Haoyu Hu"
+  },
+  "license": "MIT",
+  "keywords": [
+    "claude-code-plugin",
+    "psynet",
+    "dallinger",
+    "behavioral-experiments",
+    "research-automation",
+    "experiment-design",
+    "llm-participants",
+    "cognitive-science"
+  ]
+}

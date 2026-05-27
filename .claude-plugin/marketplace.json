@@ -1,0 +1,29 @@
+{
+  "name": "auto-psynet",
+  "owner": {
+    "name": "Haoyu Hu"
+  },
+  "metadata": {
+    "description": "Auto-PsyNet — autonomous behavioral-experiment research plugin for Claude Code.",
+    "version": "0.0.1"
+  },
+  "plugins": [
+    {
+      "name": "apsy",
+      "source": ".",
+      "description": "Idea → verified plan → PsyNet experiment → LLM-pilot/human deployment → analysis → paper. Run /apsy:setup.",
+      "version": "0.0.1",
+      "author": {
+        "name": "Haoyu Hu"
+      },
+      "license": "MIT",
+      "keywords": [
+        "psynet",
+        "behavioral-experiments",
+        "research-automation",
+        "claude-code-plugin"
+      ],
+      "category": "research"
+    }
+  ]
+}

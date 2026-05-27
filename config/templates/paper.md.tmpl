@@ -1,0 +1,38 @@
+# {{TITLE}}
+
+*{{AUTHORS}}*
+
+> Provenance: **Methods** are derived from `.apsy/research-plan.md` + the real `experiment.py`.
+> **Results** come ONLY from `.apsy/analysis/results.json` + saved figures — no number appears here that
+> was not computed. Data provenance: **{{DATA_PROVENANCE}}** (human / synthetic-LLM-pilot). Deviations
+> from the preregistration are listed in Methods from `.apsy/decisions.md`.
+
+## Abstract
+{{ABSTRACT}}
+
+## Introduction
+{{INTRO}}  <!-- motivation + gap (from §8 literature) + hypotheses (§2) -->
+
+## Methods
+- **Design & paradigm:** {{DESIGN}}  <!-- from §4; the PsyNet paradigm actually used -->
+- **Participants:** {{PARTICIPANTS}}  <!-- N (target {{TARGET_N}}), population/languages, recruiter, compensation -->
+- **Materials / stimuli:** {{STIMULI}}
+- **Procedure:** {{PROCEDURE}}  <!-- consent → prescreens → demography → trials → debrief, from the timeline -->
+- **Preregistration:** locked analysis plan (§6); deviations: {{DEVIATIONS}}
+
+## Results
+{{RESULTS}}  <!-- effect sizes + 95% CIs from results.json; reference fig_primary.png; report decision-rule outcome -->
+
+## Discussion
+{{DISCUSSION}}  <!-- interpretation calibrated to the CIs; limitations (incl. power); future work -->
+
+## Data, code & reproducibility
+Experiment code, the locked preregistration, analysis scripts, and the (anonymized) data are in the
+reproducibility package (see `apsy:repro-package`).
+
+## AI-involvement disclosure
+This research was designed, implemented, and analyzed with the assistance of the Auto-PsyNet (`apsy`)
+AI system. {{AI_DISCLOSURE_DETAIL}}
+
+## References
+{{REFERENCES}}  <!-- from §8 -->

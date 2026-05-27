@@ -1,0 +1,36 @@
+# Auto-PsyNet pipeline — workflow-as-code. The orchestrator runs these stages; gates are scored rubrics
+# in config/gates/. Full rationale: project-plan/03-architecture.md §3.3.
+version: 0.0.1
+autonomy_default: supervised        # supervised | semi_autonomous | autonomous
+
+stages:
+  - id: formulate                   # idea → verified, preregistered plan
+    primary: methodologist
+    assist: [statistician]
+    produces: [.apsy/research-plan.md]
+    gate: G1
+  - id: build                       # plan → working PsyNet experiment
+    primary: psynet-engineer
+    produces: [experiment.py, config.txt, requirements.txt, test.py]
+    gate: G2
+  - id: pilot_deploy                # LLM pilot (synthetic) → human deployment
+    primary: psynet-engineer
+    assist: [statistician]
+    substages: [llm_pilot, deploy]
+    gates: [G3, G4]                 # G4 is a HARD gate (real humans / spend)
+  - id: analyze                     # data → verified findings; iterate or ship
+    primary: statistician
+    produces: [.apsy/analysis, .apsy/reports]
+    gates: [G5, G6, G7]
+  - id: publish                     # findings → paper + reproducibility package
+    primary: science-writer         # Phase 3 persona (not yet authored)
+    produces: [paper, repro-package]
+
+gates:
+  G1: { name: Plan Verified,     rubric: config/gates/G1.yaml }
+  G2: { name: Build Verified,    check: "psynet test local green; PsyNet gotchas satisfied" }
+  G3: { name: Pilot Verified,    check: "LLM-pilot runs end-to-end; analysis executes on synthetic data" }
+  G4: { name: Deploy Approved,   hard: true, rubric: config/gates/G4.yaml }
+  G5: { name: Data Quality,      check: "attention/manipulation checks; exclusions; target N reached" }
+  G6: { name: Findings Verified, check: "analysis matched prereg; effects + CIs; deviations logged" }
+  G7: { name: Iterate or Ship,   check: "satisfied? else one change + rationale, loop to build/pilot" }

@@ -1,0 +1,38 @@
+# Question-archetype → paradigm affinity (SOFT PRIOR, not a rule). The FORMULATE `design` step queries
+# this to surface the canonical paradigm AND, when defensible, a novel cross-over (a deliberate novelty
+# source). Domains are correlated cues. See project-plan/04-skills-agents-commands.md §4.0.
+version: 0.0.1
+
+archetypes:
+  representation_recovery:
+    description: "Recover the mental representation / prior / category prototype people hold."
+    paradigms: [gsp, mcmcp]
+    domains: [perception, music_audio, aesthetics, categorization]
+  threshold:
+    description: "Measure a detection / discrimination threshold."
+    paradigms: [staircase, dense]
+    domains: [perception, psychophysics]
+  transmission:
+    description: "How content transforms as it is transmitted across people / generations."
+    paradigms: [imitation_chain]
+    domains: [language, culture, memory, music_audio]
+  interaction:
+    description: "Interaction, coordination, collective behavior, games."
+    paradigms: [graph_chain]            # + SyncGroups for real-time
+    domains: [social, economic]
+  function_mapping:
+    description: "Map a response function over a stimulus space."
+    paradigms: [dense, static]
+    domains: [perception, psychophysics]
+  generate_evaluate:
+    description: "Generate content and evaluate it."
+    paradigms: [create_and_rate]
+    domains: [aesthetics, creativity]
+  judgment:
+    description: "Simple judgment / rating / choice / classification."
+    paradigms: [static]
+    domains: [decision_making, attitudes, memory]
+
+# Track-A flagship build order: static (MVP, stepping stone) → gsp (flagship, perception anchor) →
+# mcmcp → imitation_chain → graph_chain/networks → cross-cultural + human-AI hybrid.
+flagship_order: [static, gsp, mcmcp, imitation_chain, graph_chain]

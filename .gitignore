@@ -1,0 +1,25 @@
+# Reference material (local clones, not part of the shipped plugin)
+materials/
+experiment-examples/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Jupyter checkpoint copies
+.ipynb_checkpoints/
+
+# Node
+node_modules/
+
+# Per-experiment runtime state (lives in each experiment dir, not the plugin repo)
+.apsy/
+
+# OS / editor
+.DS_Store
+*.swp
+*~
+experiment-examples/
