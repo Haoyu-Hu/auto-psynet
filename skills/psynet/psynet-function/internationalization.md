@@ -6,7 +6,7 @@
 as `_("text")` / `_p("context", "text")` (prompts, instructions, consent). The `psynet translate` CLI
 extracts and manages translations; configure locales. The **Lucid** recruiter reaches global panels.
 Reference: `docs/tutorials/internationalization.rst`; the example consent
-(`experiment-examples/create_and_rate_basic/consent_science_of_learning.py`) uses `_p` throughout.
+real lab consent modules use `_p` throughout.
 
 **Use for:** the cross-cultural/multilingual differentiator. **Always pair cross-group comparisons with a
 measurement-invariance check** (configural/metric/scalar) — see `config/blind-spots/methodology.md`.

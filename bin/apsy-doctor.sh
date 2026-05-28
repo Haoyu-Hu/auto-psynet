@@ -16,9 +16,14 @@ elif [[ -n "${OPENROUTER_API_KEY:-}" ]];  then ok "OPENROUTER_API_KEY present (m
 elif [[ "${APSY_LLM_PROVIDER:-}" == "ambient" ]]; then ok "ambient Claude (subagents) configured"
 else warn "no LLM-participant backend — run /apsy:setup (set a key or choose ambient Claude)"; fi
 
-echo "== PsyNet runtime =="
-if have psynet; then ok "psynet: $(psynet --version 2>/dev/null | head -1 || echo present)"; else bad "psynet not installed (pip install psynet)"; fi
+echo "== Dependencies (essential) =="
+if have psynet; then ok "psynet CLI: $(psynet --version 2>/dev/null | head -1 || echo present)"; else bad "psynet not installed (pip install psynet)"; fi
+psynet_path="$(python3 -c 'import psynet, os; print(os.path.dirname(psynet.__file__))' 2>/dev/null || true)"
+[[ -n "$psynet_path" ]] && ok "psynet importable: $psynet_path  (recipes reference this install; record as APSY_PSYNET_PATH)" || warn "psynet not importable by python3"
 have dallinger && ok "dallinger on PATH" || warn "dallinger not on PATH"
+python3 -c "import pandas, scipy, statsmodels" 2>/dev/null && ok "python stats stack (pandas/scipy/statsmodels)" || warn "python stats stack incomplete (pip install pandas scipy statsmodels)"
+
+echo "== PsyNet runtime (Docker/Postgres/Redis) =="
 if have docker; then
   if docker info >/dev/null 2>&1; then ok "docker daemon reachable"; else warn "docker installed but daemon unreachable → use the ec2 backend"; fi
 else warn "docker not installed → use the ec2 backend for server-side work"; fi
@@ -34,9 +39,3 @@ else warn "aws CLI not installed (needed for the ec2 backend)"; fi
 echo "== Config / identity =="
 [[ -f "$APSY_CONFIG_FILE" ]] && ok "config: $APSY_CONFIG_FILE" || warn "no config — run /apsy:setup"
 [[ -n "${APSY_USERNAME:-}" ]] && ok "username (server prefix): ${APSY_USERNAME}" || warn "no username set — run /apsy:setup"
-
-echo "== Memory (optional enrichment) =="
-mem_port="$(( 37700 + ($(id -u) % 100) ))"
-if have curl && curl -fsS --max-time 2 "http://localhost:${mem_port}/api/health" >/dev/null 2>&1; then
-  ok "claude-mem worker reachable (port ${mem_port})"
-else warn "claude-mem not reachable (optional; the plugin works without it)"; fi

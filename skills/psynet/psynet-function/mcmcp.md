@@ -21,7 +21,7 @@ matching the described category.
 **Gotchas:** chains use `start_nodes=`; tune the proposal distribution (step size drives mixing); both
 candidates must render clearly and comparably.
 
-**Worked example:** `materials/psynet/demos/experiments/mcmcp/experiment.py` (verify Node/Trial class
+**Worked example:** the installed psynet package (`psynet/trial/mcmcp.py`; demo `demos/experiments/mcmcp/` when present) (verify Node/Trial class
 names against it).
 
 **Data shape:** per-trial chosen vs rejected state; the accepted-state sequence per chain → the

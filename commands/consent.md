@@ -14,5 +14,4 @@ record the answers to `.apsy/state.json` under `consent` (read by `apsy:wire-tim
 3. **How to use it** — instantiation + placement (e.g. `consent_x(DURATION=.., PAYMENT=..)`, first in the
    timeline).
 
-Write via `bin/apsy-state.sh set consent.<key> <value>`. A Cornell IRB-complete template to start from:
-`experiment-examples/create_and_rate_basic/consent_science_of_learning.py`.
+Write via `bin/apsy-state.sh set consent.<key> <value>`. Point it at your institution's IRB-approved consent module (a `(Module, Consent)` subclass).

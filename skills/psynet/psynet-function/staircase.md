@@ -18,7 +18,7 @@ current intensity (useful for testing convergence).
 **Gotchas:** steps are **geometric** (multiply, don't add); define a reversal-based stopping rule;
 threshold = mean of the last *k* reversals.
 
-**Worked example:** `materials/psynet/demos/experiments/staircase_pitch_discrimination`.
+**Worked example (installed psynet):** `psynet/trial/staircase.py`; demo `demos/experiments/staircase_pitch_discrimination/` when present.
 
 **Data shape:** per-trial intensity + response; reversal points → a threshold estimate per participant.
 

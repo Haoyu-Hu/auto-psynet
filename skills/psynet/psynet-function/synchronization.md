@@ -5,7 +5,7 @@ time. The substrate for interacting-network experiments and **human-AI hybrid** 
 
 **Key API:** `sync_group_type` on chain/trial makers; `SyncGroups`; wait pages — `wait_while(condition,
 ...)` and `WaitPage`; `advance_past_wait_pages(bots)` to step synchronized bots in tests.
-Docs: `materials/psynet/docs/tutorials/synchronization.rst`.
+Docs: PsyNet's synchronization tutorial (`docs/tutorials/synchronization.rst` in the PsyNet docs).
 
 **Use for:** coordination/economic games, networked transmission (with `graph_chain`), and human-AI
 hybrid groups (mix human participants with LLM participants via `bin/apsy_llm_participant.py`).

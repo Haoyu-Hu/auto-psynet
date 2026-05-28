@@ -57,10 +57,9 @@ participants) and are enforced hard at the G4 deploy gate.
 ## 4. Consent default
 
 - **Default:** PsyNet `MainConsent` (`psynet.consent.MainConsent`), placed first in the timeline.
-- **Cornell template:** for Cornell studies, the richer IRB-complete consent in
-  `experiment-examples/create_and_rate_basic/consent_science_of_learning.py` (a `(Module, Consent)`
-  subclass taking `DURATION`/`PAYMENT`, i18n-ready, with Cornell IRB / Ethicspoint contacts) is the
-  recommended starting template.
+- **Custom / institutional consent:** register your institution's IRB-approved consent — a
+  `(Module, Consent)` subclass (taking `DURATION`/`PAYMENT`, i18n-ready, with your IRB contacts) — via
+  `apsy:consent`.
 - **Override:** `apsy:consent` records (1) the separate-file path (if any), (2) the class/function to
   import, and (3) how to instantiate/place it in the timeline.
 

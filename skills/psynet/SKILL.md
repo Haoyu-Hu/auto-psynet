@@ -44,4 +44,4 @@ code. The `psynet-engineer` persona owns this knowledge.
 | [`cli-and-deployment.md`](psynet-function/cli-and-deployment.md) | The `psynet` CLI (debug/deploy/export/test/update-scripts) + recruiters. |
 
 > Domain priors (perception, etc.) are separate (`config/domains/`). The selector matrix is
-> `config/affinity.yaml`. This is a knowledge pack consulted by skills — not a set of auto-firing skills.
+> `config/affinity.yaml`. This is a knowledge pack consulted by skills — not a set of auto-firing skills. Worked-example paths in recipes point to the **installed psynet package** (located by `apsy:doctor`/`setup`; `APSY_PSYNET_PATH`), not bundled here.

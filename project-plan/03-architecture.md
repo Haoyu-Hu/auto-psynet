@@ -34,7 +34,7 @@ a file-based state/memory layer (the "notebook") and a pluggable runtime (the "l
 │   • power/stats helpers                    │   │    decisions.md · deployment-log.md │
 │   • LLM-participant driver                 │   │    analysis/ · reports/             │
 │   • literature / Prolific / OSF clients    │   │  user-level  ~/.auto-psynet/        │
-│   • deployment adapter (local/ssh/heroku)  │   │  memory bridge → claude-mem (opt)   │
+│   • deployment adapter (local/ssh/heroku)  │   │  memory: files + native (no ext)    │
 └─────────────────────────────────────────┘   └────────────────────────────────────┘
         │ provisions / runs
         ▼
@@ -186,17 +186,13 @@ drop-in.)*
 
 ## 3.7 Memory layer
 
-Two tiers, hybrid (the octopus pattern; see [`02-reference-synthesis.md`](02-reference-synthesis.md §2.4)):
+File-based only — **no external memory service**. (claude-mem was evaluated and declined; see [`02-reference-synthesis.md`](02-reference-synthesis.md) §2.4.)
 
 - **Authoritative (files):** the per-experiment `.apsy/` directory + a small user-level
   `~/.auto-psynet/` (global config, cross-experiment index, API keys via env). The cross-experiment
   index is a simple registry mapping experiment IDs → paths → one-line status, so the plugin can answer
-  "what have we run before?" without depending on claude-mem.
-- **Enrichment (optional, claude-mem):** a thin, fault-tolerant bridge (`detect → HTTP → no-op on
-  failure`) used **read-only** for (a) FTS5 search across past sessions and (b) **knowledge corpora**
-  ("what stimulus designs failed validation across all studies?"). Each experiment gets a unique dir
-  basename so claude-mem's `basename(cwd)` project scoping doesn't collide. We do **not** rely on its
-  write path. The native Claude Code file-memory (this plugin's own `MEMORY.md`) records durable
+  "what have we run before?" with no external memory service.
+- **Native memory (no external service):** Claude Code's own file-memory (this plugin's `MEMORY.md`) records durable
   cross-session preferences and project facts.
 
 ## 3.8 Deployment adapter (pluggable)
@@ -251,7 +247,7 @@ anything else.
 - **PsyNet-lint PreToolUse hook:** when editing `experiment.py`, inject the 8 code-gen gotchas and flag
   obvious violations before the file is written.
 - **Capture PostToolUse hook:** after gates/tests/analysis, append outcomes to `iteration-log.md` and
-  (optionally) claude-mem.
+  the cross-experiment file index.
 
 ## 3.11 Why this is enough (and not more)
 

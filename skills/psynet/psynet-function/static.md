@@ -22,7 +22,7 @@ sampling per participant. **Not** when you need iterated, adaptive, or interacti
 **Gotchas:** static uses `nodes=` (NOT `start_nodes=`); `time_estimate` on the Trial + every page;
 unique `id_`; never reuse a node/page object instance.
 
-**Worked example:** `materials/psynet/demos/experiments/static/experiment.py`.
+**Worked example (installed psynet):** `psynet/trial/static.py` (the class) + `demos/experiments/static/` when present; locate via `apsy:doctor` (`APSY_PSYNET_PATH`).
 
 **Data shape:** `MyTrial.csv` — one row per trial with `definition` (stimulus), `answer`, `score`,
 `block`, `participant_id`, `is_repeat_trial`.

@@ -126,9 +126,9 @@ more powerful and more novel"). Surfaced as a suggestion the researcher accepts 
 | Skill | Pri | Purpose |
 |-------|-----|---------|
 | `setup` | **P0** | First-run configuration (octopus `/octo:setup` analog): detect an **OpenAI / OpenRouter** API key; if none, ask whether to use the **ambient Claude Code model** (LLM participants driven via subagents) or set a key + pick the model that backs **LLM participants** (and any second-opinion "discussion"); capture the **username** used as the server-name prefix (`{username}.{study}.{host}`), the base domain, and AWS creds for EC2. If no consent is configured, note the default (`MainConsent`) and point to `apsy:consent`. Writes `~/.auto-psynet/config`. | configured backend + identity |
-| `doctor` | **P0** | Validate the runtime: Docker/Postgres/Redis, `psynet` install + version, LLM-participant key (OpenAI/OpenRouter) or ambient fallback, **AWS creds for EC2** + deployment-backend reachability, claude-mem presence. The first thing run; gives an actionable checklist. |
+| `doctor` | **P0** | Validate the runtime: Docker/Postgres/Redis, `psynet` install + version, LLM-participant key (OpenAI/OpenRouter) or ambient fallback, **AWS creds for EC2** + deployment-backend reachability, and essential-dependency detection. The first thing run; gives an actionable checklist. |
 | `status` | **P0** | Read `.apsy/state.json` and report exactly where this experiment stands (stage, iteration, gates, spend, next action). The resume entry point. |
-| `recall` | P2 | Query cross-experiment memory (file index + claude-mem corpora) for prior decisions/lessons. |
+| `recall` | P2 | Query the cross-experiment memory (file-based index) for prior decisions/lessons. |
 
 ## 4.2 Agents / personas (the expert brains)
 
@@ -180,12 +180,12 @@ Wired in `.claude-plugin/hooks.json` (octopus conventions: matchers with `if`/re
 
 | Event | Hook | Pri | Does |
 |-------|------|-----|------|
-| SessionStart | `load-experiment-context` | **P0** | If in an experiment dir, inject `.apsy/state.json` + recent `iteration-log.md`; pull claude-mem context (fault-tolerant). Makes sessions resumable across the data-collection gap. |
+| SessionStart | `load-experiment-context` | **P0** | If in an experiment dir, inject `.apsy/state.json` + recent `iteration-log.md`. Makes sessions resumable across the data-collection gap. |
 | SessionStart | `router-inject` | P1 | Inject the `/apsy:auto` routing contract. |
 | PreToolUse (Edit/Write on `experiment.py`) | `psynet-lint` | **P0** | Inject the 8 code-gen gotchas; flag obvious violations (missing `time_estimate`, duplicate `id_`, missing `bot_response`) before write. |
 | PreToolUse (Bash: `psynet deploy`, recruiter/API, spend) | `spend-gate` | **P0** | **Hard block** real deploy/recruit/payment unless an approval token + configured cap are present (G4). Never auto-passed. |
 | PostToolUse (after `psynet test`/gate/analysis) | `quality-gate` | P1 | Parse the gate/test result; `{"decision":"block"}` on failure; append outcome to `iteration-log.md`. |
-| PostToolUse (`*`) | `capture` | P2 | Append durable outcomes to state/memory (+ optional claude-mem). |
+| PostToolUse (`*`) | `capture` | P2 | Append durable outcomes to the `.apsy/` state files. |
 | SessionEnd | `snapshot-state` | P1 | Flush `.apsy/state.json`; record next action. |
 
 ## 4.5 MCP server (optional, P2)

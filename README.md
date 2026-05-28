@@ -23,7 +23,7 @@ FORMULATE →[G1] BUILD →[G2] PILOT & DEPLOY →[G3/G4] ANALYZE →[G5/G6/G7] 
 | Command | Purpose |
 |---------|---------|
 | `/apsy:setup` | First-run config: LLM-participant backend (OpenAI/OpenRouter or ambient Claude), username/server prefix, AWS creds, base domain |
-| `/apsy:doctor` | Environment diagnostics (Docker/Postgres/Redis, `psynet`, keys, AWS, claude-mem) |
+| `/apsy:doctor` | Environment diagnostics — essential deps (`psynet`/`dallinger`), Docker/Postgres/Redis, keys, AWS, config |
 | `/apsy:status` | Where the current experiment stands (reads `.apsy/state.json`) |
 | `/apsy:debug` | Run an experiment locally or on a provisioned EC2 instance |
 | `/apsy:idea` | Start FORMULATE — idea → verified plan *(Phase 1)* |
@@ -55,8 +55,8 @@ bin/              the deterministic engine (psynet/analysis/LLM-participant wrap
 config/           ethics-policy, gates, pipeline, paradigm recipes, domain priors, affinity, templates
 tests/            assembly + behavior tests
 project-plan/     the full design (read this first)
-materials/        reference repos (PsyNet, Dallinger, octopus, claude-mem) — gitignored
-experiment-examples/  real PsyNet experiments used as references — gitignored
+materials/        local reference clones (PsyNet, Dallinger) — dev-only, gitignored, not shipped
+experiment-examples/  real PsyNet experiments for dev reference — dev-only, gitignored, not shipped
 ```
 
 Built on [PsyNet](https://gitlab.com/PsyNetDev/PsyNet) / [Dallinger](https://github.com/Dallinger/Dallinger).

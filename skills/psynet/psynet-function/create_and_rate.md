@@ -18,7 +18,7 @@ selection-driven cultural evolution.
 **Gotchas:** define exactly how ratings/selections feed the next generation; balance the creator vs.
 rater roles; consult the tutorial for the composition pattern.
 
-**Worked example:** `materials/psynet/psynet/trial/create_and_rate.py` + `docs/tutorials/create_and_rate.rst`.
+**Worked example (installed psynet):** `psynet/trial/create_and_rate.py` + PsyNet's create-and-rate tutorial.
 
 **Data shape:** creations + their ratings/selections per generation.
 

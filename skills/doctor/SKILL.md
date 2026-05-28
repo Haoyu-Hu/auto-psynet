@@ -1,6 +1,6 @@
 ---
 name: doctor
-description: "Diagnose the Auto-PsyNet runtime — use when the user says 'apsy doctor', 'check my setup', 'is everything working', or before first deploy. Validates Docker/Postgres/Redis, psynet, LLM keys, AWS, config, claude-mem."
+description: "Diagnose the Auto-PsyNet runtime — use when the user says 'apsy doctor', 'check my setup', 'is everything working', or before first deploy. Validates that essential dependencies (psynet, dallinger) are installed + detectable, plus Docker/Postgres/Redis, LLM keys, AWS, config."
 ---
 
 # apsy:doctor — environment diagnostics
@@ -11,16 +11,16 @@ description: "Diagnose the Auto-PsyNet runtime — use when the user says 'apsy 
 ## STEP 1 — Run checks
 Resolve the plugin root (`${CLAUDE_PLUGIN_ROOT}`) and run `bin/apsy-doctor.sh`. It checks, and prints a
 status line per item:
-- `psynet` CLI installed + version; `dallinger` present
+- **Essential dependencies**: `psynet` (CLI + importable) + `dallinger` installed & detectable; the
+  Python stats stack (`pandas`/`scipy`/`statsmodels`); records the psynet install path (`APSY_PSYNET_PATH`)
 - Docker daemon reachable; Postgres reachable; Redis reachable
 - LLM-participant backend: `OPENAI_API_KEY` / `OPENROUTER_API_KEY` present, **or** ambient-Claude mode
 - AWS credentials present (for the `ec2` backend) + region
 - `~/.auto-psynet/config` present and parseable
-- claude-mem worker reachable (optional enrichment)
 
 ## STEP 2 — Report
 Render results as a checklist using ✅ (ok) / ⚠️ (advisory) / ❌ (blocking). Group by: **LLM backend**,
-**PsyNet runtime** (Docker/PG/Redis/psynet), **Deploy (EC2/AWS)**, **Config/Identity**, **Memory**.
+**Dependencies** (psynet/dallinger/stats), **PsyNet runtime** (Docker/PG/Redis), **Deploy (EC2/AWS)**, **Config/Identity**.
 
 ## STEP 3 — Offer fixes
 For each ❌/⚠️, give the concrete remedy (e.g. "no Docker → use the `ec2` backend, or install Docker";

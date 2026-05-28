@@ -9,7 +9,7 @@ description: "BUILD step — fill the scaffolded experiment.py with the Trial/No
 
 ## STEP 1 — Load recipe + plan
 Read `skills/psynet/psynet-function/<paradigm>.md` (the recipe; via the `apsy:psynet` index) and `.apsy/research-plan.md` §3–§5 (variables, design,
-N). Cite the worked example the recipe points to (`materials/psynet/demos/...`, `experiment-examples/`).
+N). Cite the worked example the recipe points to (in the installed psynet package; `apsy:doctor` records `APSY_PSYNET_PATH`).
 
 ## STEP 2 — Stimuli / nodes
 From §3–§4, build the stimulus list / nodes. For non-trivial sets or media, call `apsy:generate-stimuli`.

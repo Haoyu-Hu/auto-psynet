@@ -16,7 +16,7 @@ discrimination. Specialized trial types: `SliderCopyTrial`, `SameDifferentTrial`
 **Gotchas:** like static, uses `nodes=`; **pick the trial type to match the question** — AXB &
 same-different for discrimination, slider-copy for matching, single/paired for rating.
 
-**Worked example:** `materials/psynet/psynet/trial/dense.py` + the dense demos.
+**Worked example (installed psynet):** `psynet/trial/dense.py` + the dense demos when present.
 
 **Data shape:** stimulus coordinate + response per trial → the response function over the space.
 

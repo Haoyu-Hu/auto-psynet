@@ -21,7 +21,7 @@ Stand up the skeleton and prove the lab works.
 - **`/apsy:setup`** — configure the LLM-participant backend (OpenAI/OpenRouter key, or ambient Claude),
   capture the username/server prefix + base domain + AWS creds, write `~/.auto-psynet/config`.
 - **`/apsy:doctor`** — validate Docker/Postgres/Redis, `psynet` install, LLM key (or fallback), AWS
-  creds, deployment-backend reachability, claude-mem presence.
+  creds, deployment-backend reachability, and dependency detection (psynet/dallinger).
 - **`debug` target selector** — wire the deployment adapter so a hello-world runs either locally or on a
   Dallinger-provisioned `ec2` instance (resolves D1; no reliance on local Docker if EC2-first).
 - **Exit criterion:** a hello-world runs via `debug` (local or `ec2`); `setup` + `doctor` green.
@@ -78,7 +78,7 @@ start once Phase 1 + one paradigm + a host exist; it *is* gated behind D1 (publi
 ### Phase 6 — Autonomy, multi-LLM review, integrations
 - `/apsy:auto` smart router; `/apsy:run` autonomous pipeline; `semi_autonomous`/`autonomous` levels.
 - `adversarial-reviewer` + optional **multi-LLM** review of designs/stats (the kickoff's deferred option).
-- Optional **MCP server**; richer claude-mem corpora; cross-experiment `recall`; human-vs-LLM comparison
+- Optional **MCP server**; cross-experiment `recall` (file-based); human-vs-LLM comparison
   templates; remaining paradigms (staircase, dense, create-and-rate); domain-priors expansion.
 
 ## 5.2 Milestones (checkpointable)
@@ -110,7 +110,7 @@ start once Phase 1 + one paradigm + a host exist; it *is* gated behind D1 (publi
 | **Scientific validity of LLM-as-subject claims.** | Med | Honesty guardrails (scope §1.5); Level-2 outputs flagged in-silico with caveats; comparison studies framed carefully. |
 | **p-hacking / HARKing via the automation itself.** | **High** | Preregistration lock at G1 (treated as a holdout); G6 checks analysis-matched-plan; deviations logged, never silent. |
 | **Real-money / real-people harm.** | **High** | G4 hard gate (never auto-passed); spend caps as PreToolUse blocks; human owns ethics/IRB. |
-| **claude-mem coupling/version drift.** | Low | Read-only, fault-tolerant bridge; files are the source of truth; no dependence on its write path. |
+| **External memory service.** | n/a | **Not used** — memory is file-based only (`.apsy/` + native Claude Code memory); no external memory dependency. |
 | **Scope creep toward octopus's size.** | Med | Strict P0/P1/P2 discipline; MVP = one paradigm, synthetic-only, supervised, local. |
 | **PsyNet/Dallinger version churn.** | Low–Med | Pin `psynet==` in generated `requirements.txt`; engine asserts the version `doctor` validated. |
 

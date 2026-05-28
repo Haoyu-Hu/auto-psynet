@@ -24,7 +24,7 @@ a value conditioned on the rendered (described) stimulus.
 **Gotchas:** chains use `start_nodes=` (not `nodes=`); media synthesis can be slow — set `n_jobs`; define
 `vector_ranges` + `granularity` for media-GSP; remember `balance_across_chains`.
 
-**Worked examples:** `materials/psynet/demos/experiments/gibbs/experiment.py` and `.../gibbs_audio/`.
+**Worked examples (installed psynet):** `psynet/trial/gibbs.py` + `media_gibbs.py`; demos `demos/experiments/gibbs/`, `gibbs_audio/` when present.
 
 **Data shape:** per-node vectors across chain iterations → analyze the converging / stationary
 distribution. Export gives the Trial CSV + node tables carrying the vectors.

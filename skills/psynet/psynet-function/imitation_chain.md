@@ -21,7 +21,7 @@ copy faithfully in tests).
 **Gotchas:** chains use `start_nodes=` (lambda for within, list for across); `summarize_trials` must
 return the next seed in the **same shape** as the seed; set chain length via `max_nodes_per_chain`.
 
-**Worked example:** `materials/psynet/demos/experiments/imitation_chain/experiment.py`.
+**Worked example (installed psynet):** `psynet/trial/imitation_chain.py`; demo `demos/experiments/imitation_chain/` when present.
 
 **Data shape:** per-node seeds across generations → the transformation trajectory per chain.
 

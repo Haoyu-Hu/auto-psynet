@@ -1,6 +1,6 @@
 ---
 command: doctor
-description: Auto-PsyNet environment diagnostics — Docker/Postgres/Redis, psynet, LLM keys, AWS, config, claude-mem.
+description: Auto-PsyNet environment diagnostics — essential dependencies (psynet/dallinger), Docker/Postgres/Redis, LLM keys, AWS, config.
 allowed-tools: Bash, Read, Glob, Grep, AskUserQuestion, Skill
 ---
 

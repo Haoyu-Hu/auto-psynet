@@ -135,7 +135,11 @@ kickoff's third option — but not the default.)
 
 ---
 
-## 2.4 claude-mem — the optional memory enrichment
+## 2.4 claude-mem — evaluated, NOT adopted
+
+> **Decision: NOT adopted.** Memory is **file-based only** (the per-experiment `.apsy/` directory +
+> Claude Code's native file-memory); claude-mem is **not a dependency**. The analysis below is kept as
+> design rationale for why an external memory service was evaluated and declined.
 
 A persistent-memory-compression system for Claude Code (SQLite + FTS5, optional Chroma vectors; a
 background worker captures tool events on `PostToolUse`/`Stop`, an LLM compresses them into typed
@@ -181,7 +185,7 @@ truth; relying on its write API; assuming `basename(cwd)` project scoping is saf
 | **PsyNet** | The instrument we generate + drive | Regular, declarative target; reuse its paradigms + batteries; respect 8 code-gen gotchas; drive its real CLI. |
 | **Dallinger** | Transparent substrate | Touch only via PsyNet; informs the deployment/recruiter adapter. |
 | **octopus** | Architecture template | Copy the *structure* (skill contracts, persona registry, gated pipeline, hooks, holdout loop, file-state) — not the multi-provider scope. |
-| **claude-mem** | Optional memory enrichment | Hybrid: own files as truth; bridge claude-mem (read/search/corpora) fault-tolerantly; don't trust its write path or project scoping. |
+| **claude-mem** | Evaluated, **not adopted** | Memory is file-based only (`.apsy/` + native Claude Code memory); claude-mem is not a dependency. |
 
 ---
 
