@@ -1,7 +1,9 @@
 # experiment.py — Auto-PsyNet (static-trial paradigm). Generated from .apsy/research-plan.md.
-# Fill every {{PLACEHOLDER}}. Respect the PsyNet gotchas: time_estimate on every Page/Trial; unique
-# Module/TrialMaker id_; bot_response on every Control; static uses nodes=; Markup() for HTML; consent
-# first. Worked reference: the installed psynet package (psynet/trial/static.py; demos/experiments/static/ when present).
+# Every {{ NAME }}-style placeholder below (no spaces in real placeholders; spaces in this comment so
+# this line is itself not a placeholder) is filled by apsy:scaffold + apsy:implement-paradigm.
+# Respect the PsyNet gotchas: time_estimate on every Page/Trial; unique Module/TrialMaker id_;
+# bot_response on every Control; static uses nodes=; Markup() for HTML; consent first. Worked
+# reference: the installed psynet package (psynet/trial/static.py; demos/experiments/static/ when present).
 import psynet.experiment
 from markupsafe import Markup
 from psynet.consent import MainConsent

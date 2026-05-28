@@ -20,12 +20,18 @@ trials = pd.read_csv(DATA / "{{TRIAL_CSV}}")
 # {{EXCLUSIONS}}
 
 # --- Preregistered model (§6 — LOCKED) -------------------------------------------------------------
-# Fill with the locked model. Example (nested accuracy — trials within participants):
+# The {{ ANALYSIS_BODY }} block below is filled by apsy:analysis-plan. It MUST assign a dict named
+# `results` (with effect / ci95 / p / n keys at minimum). Helper functions may be defined above the
+# assignment. Example for nested accuracy (trials within participants):
 #   import statsmodels.formula.api as smf
 #   m = smf.mixedlm("{{DV}} ~ {{IV}}", trials, groups=trials["participant_id"]).fit()
-#   beta = float(m.params["{{IV}}"]); lo, hi = (float(x) for x in m.conf_int().loc["{{IV}}"])
+#   beta = float(m.params["{{IV}}"])
+#   lo, hi = (float(x) for x in m.conf_int().loc["{{IV}}"])
 #   results = {"effect": beta, "ci95": [lo, hi], "p": float(m.pvalues["{{IV}}"]), "n": int(trials["participant_id"].nunique())}
-results = {{RESULTS_EXPR}}
+
+{{ANALYSIS_BODY}}
+
+assert isinstance(results, dict), "the §6 analysis must bind `results` to a dict"
 
 # --- Persist effects + CIs (+ a figure) ------------------------------------------------------------
 (OUT / "results.json").write_text(json.dumps(results, indent=2, default=str))

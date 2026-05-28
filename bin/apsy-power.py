@@ -54,12 +54,19 @@ def compute(args):
     notes = []
     if test in ("t2", "paired"):
         if sm:
-            analysis = TTestIndPower() if test == "t2" else TTestPower()
-            n = analysis.solve_power(effect_size=args.effect, alpha=args.alpha,
-                                     power=args.power, ratio=args.ratio if test == "t2" else 1.0,
-                                     alternative="two-sided" if args.tail == "two" else "larger")
+            alternative = "two-sided" if args.tail == "two" else "larger"
+            if test == "t2":
+                analysis = TTestIndPower()
+                n = analysis.solve_power(effect_size=args.effect, alpha=args.alpha,
+                                         power=args.power, ratio=args.ratio,
+                                         alternative=alternative)
+                per = "per group"
+            else:   # paired — TTestPower.solve_power() does NOT accept 'ratio'
+                analysis = TTestPower()
+                n = analysis.solve_power(effect_size=args.effect, alpha=args.alpha,
+                                         power=args.power, alternative=alternative)
+                per = "pairs"
             n = math.ceil(n)
-            per = "per group" if test == "t2" else "pairs"
         else:
             n = n_per_group_normal_approx(args.effect, args.alpha, args.power, args.tail)
             per = "per group (normal approx)" if test == "t2" else "pairs (normal approx; ~per group)"

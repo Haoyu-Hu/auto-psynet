@@ -50,10 +50,34 @@ def main():
     n = len(df)
     out["checks"]["n_rows"] = n
 
+    # Detect trial-level vs participant-level shape (PsyNet's <TrialClass>.csv is trial-level — one row
+    # per trial, many rows per participant; Participant.csv is participant-level).
+    pid_col = next((c for c in ("worker_id", "unique_id", "prolific_id", "participant_id")
+                    if c in df.columns), None)
+    is_trial_level = False
+    n_participants = None
+    if pid_col:
+        n_participants = int(df[pid_col].nunique())
+        if n_participants > 0 and n / n_participants >= 1.5:
+            is_trial_level = True
+    out["checks"]["shape"] = "trial-level" if is_trial_level else "participant-level"
+    if is_trial_level:
+        out["checks"]["n_unique_participants"] = n_participants
+        out["checks"]["avg_trials_per_participant"] = round(n / n_participants, 2)
+
     if "failed" in df.columns:
         failed = int(df["failed"].astype(str).str.lower().isin(["true", "1", "t", "yes"]).sum())
-        out["checks"].update(n_failed=failed, n_valid=n - failed,
-                             completion_rate=round((n - failed) / n, 3) if n else None)
+        out["checks"]["n_failed_rows"] = failed
+        if is_trial_level and pid_col:
+            # completion = participants who have NO failed trial
+            failed_mask = df["failed"].astype(str).str.lower().isin(["true", "1", "t", "yes"])
+            n_complete = int(df[~failed_mask][pid_col].nunique() if (~failed_mask).any() else 0)
+            out["checks"]["n_complete_participants"] = n_complete
+            out["checks"]["completion_rate"] = round(n_complete / n_participants, 3) if n_participants else None
+        else:
+            out["checks"].update(n_failed=failed, n_valid=n - failed,
+                                 completion_rate=round((n - failed) / n, 3) if n else None)
+
     for col in ("status", "progress", "aborted"):
         if col in df.columns:
             out["checks"][f"{col}_counts"] = df[col].value_counts(dropna=False).head(10).to_dict()
@@ -62,20 +86,20 @@ def main():
     if att:
         out["checks"]["attention_columns"] = att
 
-    for idc in ("worker_id", "unique_id", "prolific_id", "participant_id"):
-        if idc in df.columns:
-            dups = int(df[idc].duplicated().sum())
-            out["checks"][f"duplicate_{idc}"] = dups
-            if dups:
-                out["flags"].append(f"{dups} duplicate {idc}")
-            break
+    if pid_col and not is_trial_level:
+        # Duplicate-id check only meaningful for participant-level data.
+        dups = int(df[pid_col].duplicated().sum())
+        out["checks"][f"duplicate_{pid_col}"] = dups
+        if dups:
+            out["flags"].append(f"{dups} duplicate {pid_col}")
 
-    valid = out["checks"].get("n_valid", n)
+    # Target-N comparison: against unique participants when trial-level; against valid rows otherwise.
     if a.target_n:
         out["checks"]["target_n"] = a.target_n
-        out["checks"]["target_met"] = valid >= a.target_n
-        if valid < a.target_n:
-            out["flags"].append(f"target N not met ({valid}/{a.target_n})")
+        denom = n_participants if is_trial_level else out["checks"].get("n_valid", n)
+        out["checks"]["target_met"] = (denom or 0) >= a.target_n
+        if (denom or 0) < a.target_n:
+            out["flags"].append(f"target N not met ({denom}/{a.target_n})")
 
     out["verdict"] = "review" if out["flags"] else "ok"
     print(json.dumps(out, indent=2, default=str))
