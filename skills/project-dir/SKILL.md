@@ -27,9 +27,15 @@ experiment under the same root, so the layout is uniform:
 └── ...
 ```
 
-**Important — data exports stay outside this dir.** PsyNet writes exports to `~/psynet-data/export/`
-(its convention, not the plugin's). This skill does NOT redirect that. If you want exports inside
-the project tree, symlink it manually: `ln -s ~/psynet-data ~/<APSY_PROJECT_DIR>/_psynet-data`.
+**Data redirection** (NEW): the plugin offers two complementary redirects so PsyNet's
+`~/psynet-data/...` hardcoded paths flow into the project tree:
+- **Exports** (`psynet export local`): use `bin/apsy-export.sh` wrapper — it auto-passes
+  `--path $APSY_PROJECT_DIR/data/<study>` to redirect each export per-call. No symlinks needed.
+- **Assets / launch-data / artifacts** (psynet hardcodes `~/psynet-data/assets`,
+  `~/psynet-data/launch-data`, `~/psynet-data/artifacts` via `os.path.expanduser`): optionally
+  symlink `~/psynet-data` → `$APSY_PROJECT_DIR/data` so all four paths land under your project
+  tree. Offered as STEP 4 below — safe only when `~/psynet-data` is missing OR empty OR already
+  a symlink.
 
 ## STEP 1 — Read current state
 - Read `~/.auto-psynet/config` for an existing `APSY_PROJECT_DIR`. Report it.
@@ -53,7 +59,24 @@ Use `AskUserQuestion` (skip if path passed via `$ARGUMENTS`):
 ## STEP 4 — Record
 Write to `~/.auto-psynet/config` via `bin/apsy-config.sh set APSY_PROJECT_DIR <absolute-path>`.
 
-## STEP 5 — Report + (optional) migration
+## STEP 5 — (optional) symlink `~/psynet-data` → `$APSY_PROJECT_DIR/data`
+PsyNet's `assets` / `launch-data` / `artifacts` paths are hardcoded with `os.path.expanduser`
+(`psynet/asset.py:2595`, `psynet/command_line.py:948`, `psynet/artifact.py:453`). The cleanest way
+to redirect them is to symlink `~/psynet-data` to `$APSY_PROJECT_DIR/data`. **Offer this via
+`AskUserQuestion`, but ONLY if it's safe:**
+
+| Current state of `~/psynet-data` | Action |
+|---|---|
+| Does NOT exist | `mkdir -p $APSY_PROJECT_DIR/data; ln -s $APSY_PROJECT_DIR/data ~/psynet-data` |
+| Empty directory (no files, no subdirs) | `rmdir ~/psynet-data; ln -s $APSY_PROJECT_DIR/data ~/psynet-data` |
+| Already a symlink pointing at `$APSY_PROJECT_DIR/data` | no-op (already done) |
+| Already a symlink pointing elsewhere | **Refuse** — show the current target; ask the user to resolve manually |
+| Real dir with content | **Refuse** — list the contents (`ls -la ~/psynet-data`); suggest manual migration: `mv ~/psynet-data/* $APSY_PROJECT_DIR/data/ && rmdir ~/psynet-data && ln -s $APSY_PROJECT_DIR/data ~/psynet-data` |
+
+When the symlink is in place, `psynet export local` (via `bin/apsy-export.sh`), asset staging,
+launch-data writes, and artifact storage ALL land under `$APSY_PROJECT_DIR/data/...` transparently.
+
+## STEP 6 — Report + (optional) migration
 - Confirm with the user: print the path + a sample of what now lives there (`ls -1d
   $APSY_PROJECT_DIR/*/` to show existing subdirs, if any).
 - **Do NOT auto-migrate** existing experiments scattered across other directories. If the user

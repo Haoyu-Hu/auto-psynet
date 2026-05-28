@@ -153,13 +153,17 @@ GI
   RUNTIME LIFECYCLE — read this before you launch.
   • PsyNet experiments have NO stop signal. The server runs INDEFINITELY.
   • Ctrl+C in THIS terminal is the only way to kill it.
-  • Before Ctrl+C: in a SEPARATE shell, run  psynet export local
-    Verify the export at  ~/psynet-data/export/<study>__mode=debug__.../
-    THEN come back here and Ctrl+C to destroy.
-  • Hot-reload picks up most edits, but RESTART is required after:
-      - edits to the top-level Exp class
-      - edits to any TrialMaker subclass
-      - edits to module-level imported classes used by the timeline
+  • Before Ctrl+C: in a SEPARATE shell, run  bash bin/apsy-export.sh
+    (the wrapper passes --path APSY_PROJECT_DIR/data/<study> when project-dir is set;
+    otherwise it falls through to psynet's default ~/psynet-data/export/<study>__...).
+    Verify the export contents, THEN come back here and Ctrl+C to destroy.
+  • Hot-reload (werkzeug stat reloader) fires on every edit, but workers stay STALE
+    after class-structure changes — RESTART is required for:
+      - the top-level Exp class (config dict, label, attributes)
+      - any TrialMaker subclass
+      - module-level imported classes used by the timeline
+    (Edits to method bodies / literals / comments / bot_response / time_estimate
+    values usually hot-reload cleanly.)
 ────────────────────────────────────────────────────────────────────────────────
 
 LIFE

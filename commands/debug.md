@@ -27,8 +27,11 @@ running indefinitely — even after the recruitment cap is reached. The only way
 the server.
 
 **Required workflow before `Ctrl+C`:**
-1. Run **`psynet export local`** in a separate shell.
-2. Verify the export at `~/PsyNet-data/export/<app>/` contains all the data you need.
+1. Run **`bash bin/apsy-export.sh`** in a separate shell. (If `APSY_PROJECT_DIR` is set, the
+   wrapper redirects the export to `<APSY_PROJECT_DIR>/data/<study>/` via `--path`. Otherwise it
+   falls through to plain `psynet export local` → `~/psynet-data/export/<study>__mode=debug__.../`.)
+2. Verify the export contents (CSVs under `anonymous/data/` are what you need; `source_code.zip`
+   archives the experiment.py).
 3. Only then `Ctrl+C` the debug terminal to destroy.
 
 Premature `Ctrl+C` may lose pending DB writes that weren't flushed.

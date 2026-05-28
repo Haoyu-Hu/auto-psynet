@@ -70,8 +70,11 @@ required for `psynet debug local` unless you set the panel-specific config**), `
   the experiment server are independent components.
 - **The only way to stop and destroy it is `Ctrl+C` in the terminal that started it.** Closing the
   browser or hitting "Done" in the UI does NOT kill the server.
-- **Workflow:** before `Ctrl+C`, run **`psynet export local`** in a separate shell and verify the
-  export contains what you need. Premature `Ctrl+C` may lose pending DB writes.
+- **Workflow:** before `Ctrl+C`, run **`bash bin/apsy-export.sh`** in a separate shell (it's a
+  thin wrapper around `psynet export local --path` that redirects to
+  `$APSY_PROJECT_DIR/data/<study>/` when `APSY_PROJECT_DIR` is set; falls through to
+  `~/psynet-data/export/` otherwise). Verify the export contents — premature `Ctrl+C` may lose
+  pending DB writes.
 - **Hot-reload (verified 2026-05-28 against psynet 13.2 / dallinger 12.2):** more nuanced than
   "some edits do/don't reload" — the mechanism is two-layered:
   - **Layer 1: werkzeug's stat reloader fires on EVERY file change.** Tested 8 categorized edits
@@ -92,7 +95,9 @@ required for `psynet debug local` unless you set the panel-specific config**), `
     sufficient. **When in doubt, restart.**
 
 **How `apsy` wraps these:** `apsy-scaffold.sh` (→ `update-scripts`), `apsy-test.sh` (→ `test local`, G2),
-`apsy-debug.sh` (local | ec2), `apsy-deploy.sh` (G4 gate → `deploy`), `apsy-export.sh` (→ `export`),
+`apsy-debug.sh` (local | ec2 + pre-launch auto-fix + lifecycle reminder),
+`apsy-deploy.sh` (G4 gate → `deploy`),
+`apsy-export.sh` (→ `psynet export local --path <APSY_PROJECT_DIR>/data/<study>` when project-dir set),
 `apsy-pilot.sh` (LLM-participant `test local`).
 
 **Gotchas:** pin the `psynet` version (`requirements.txt`); local debug does NOT necessarily need
