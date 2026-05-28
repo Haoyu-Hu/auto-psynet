@@ -33,13 +33,22 @@ the server.
 
 Premature `Ctrl+C` may lose pending DB writes that weren't flushed.
 
-**Hot-reload behavior** (auto-reload path): most file edits take effect without restarting the
-server. **Restart IS required** for edits to:
-- the top-level `Exp` class
+**Hot-reload behavior (verified 2026-05-28 — two-layered mechanism):**
+- werkzeug's stat reloader **fires on every file change** (the log shows `Detected change …
+  reloading` for ALL edits).
+- BUT dallinger's worker subprocesses (gunicorn workers, the experiment_server process) **do not
+  auto-re-import** the Exp class — they keep the OLD class objects.
+
+So edits that change CLASS STRUCTURE may LOOK reloaded yet leave the workers stale. **Restart IS
+required** for:
+- the top-level `Exp` class (config dict, label, top-level attributes)
 - any `TrialMaker` subclass
 - module-level imported classes used by the timeline
 
-When in doubt, restart.
+Edits to method bodies, literal strings, comments, `bot_response` lambdas, `time_estimate` values
+usually hot-reload cleanly. **When in doubt, restart.** (Concrete failure observed: adding a key
+to Exp.config → werkzeug reloaded, but `/dashboard/config` returned `KeyError` because workers
+cached the old config.)
 
 **This is debug only — it does NOT enable real recruitment.** Real human data collection is `/apsy:deploy`,
 which is gated by **G4** (human approval + IRB attestation + spend cap).

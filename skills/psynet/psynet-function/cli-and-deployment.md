@@ -53,12 +53,24 @@ required for `psynet debug local` unless you set the panel-specific config**), `
   browser or hitting "Done" in the UI does NOT kill the server.
 - **Workflow:** before `Ctrl+C`, run **`psynet export local`** in a separate shell and verify the
   export contains what you need. Premature `Ctrl+C` may lose pending DB writes.
-- **Hot-reload (auto-reload path):** most file edits take effect without restart. **Edits that
-  DO require a restart** (this list is partial — needs further verification against the runtime):
-  - the top-level `Exp` class
-  - any `TrialMaker` subclass
-  - module-level imported classes used by the timeline
-  When in doubt, restart.
+- **Hot-reload (verified 2026-05-28 against psynet 13.2 / dallinger 12.2):** more nuanced than
+  "some edits do/don't reload" — the mechanism is two-layered:
+  - **Layer 1: werkzeug's stat reloader fires on EVERY file change.** Tested 8 categorized edits
+    to experiment.py (comments, InfoPage strings, bot_response lambdas, Trial.time_estimate,
+    Exp.label, Exp.config keys, show_trial method bodies, module-level imports). Log showed
+    `Detected change in '/tmp/dallinger_develop/experiment.py', reloading` + `Restarting with stat`
+    for ALL 8. Server stayed responsive throughout.
+  - **Layer 2: dallinger's worker/auxiliary subprocesses do NOT auto-re-import.** They hold the
+    OLD Exp class objects after a reload. **Concrete failure observed:** adding a new key to
+    Exp.config (e.g. `"T6_test_key": "added"`) → `GET /dashboard/config` returned
+    `KeyError: 'T6_test_key'` even though werkzeug had reloaded the file. The dashboard code
+    references the live Exp.config (which has the key) but reads it against a stale cached dict
+    in a worker that doesn't.
+  - **Practical rule:** edits that change CLASS STRUCTURE (Exp class config dict, Trial /
+    TrialMaker class attributes, module-level imports) → **restart `psynet debug local`** even
+    though werkzeug "appears" to reload, because workers don't see the new class. Edits to
+    method bodies / literal strings / comments / bot_response lambdas → werkzeug reload usually
+    sufficient. **When in doubt, restart.**
 
 **How `apsy` wraps these:** `apsy-scaffold.sh` (→ `update-scripts`), `apsy-test.sh` (→ `test local`, G2),
 `apsy-debug.sh` (local | ec2), `apsy-deploy.sh` (G4 gate → `deploy`), `apsy-export.sh` (→ `export`),

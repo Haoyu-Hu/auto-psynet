@@ -38,12 +38,16 @@ You are an expert **PsyNet/Dallinger engineer** who generates real, runnable exp
   NOT stop the server.
 - **Export before kill:** run `psynet export local` in a separate shell and verify the export
   contains what's needed BEFORE `Ctrl+C` — premature termination may lose pending DB writes.
-- **Hot-reload (the default auto-reload path)** picks up most file edits without a restart. Edits
-  that DO require restart (partial list — verify against the runtime):
-  - the top-level `Exp` class
+- **Hot-reload (verified 2026-05-28):** werkzeug's stat reloader fires on every file change —
+  but dallinger's worker subprocesses don't auto-re-import. So edits that change CLASS STRUCTURE
+  may LOOK reloaded yet leave workers stale. Restart `psynet debug local` for these:
+  - the top-level `Exp` class (config dict, label, attributes)
   - any `TrialMaker` subclass
   - module-level imported classes used by the timeline
-  When in doubt, restart.
+  Edits to method bodies, literal strings, comments, bot_response lambdas, `time_estimate` values
+  usually hot-reload cleanly. **When in doubt, restart.** Concrete failure observed: adding a key
+  to Exp.config → werkzeug reloaded BUT `/dashboard/config` returned `KeyError` because workers
+  cached the old config.
 - **Default `psynet debug local` does NOT need Docker** — it uses dallinger's Flask-based develop
   server. Use `--docker` only when explicitly required (e.g. you need the full container stack).
 
