@@ -232,6 +232,25 @@
         "latest psynet",
         "newer version"
       ]
+    },
+    "add-recipe": {
+      "command": "add-recipe",
+      "priority": 7,
+      "keywords": [
+        "add recipe",
+        "new recipe",
+        "psynet recipe",
+        "new paradigm",
+        "psynet paradigm",
+        "add paradigm",
+        "extend psynet",
+        "extend psynet skills",
+        "add psynet function",
+        "new psynet skill",
+        "register paradigm",
+        "teach psynet",
+        "add-recipe"
+      ]
     }
   },
   "stage_next_action": {
