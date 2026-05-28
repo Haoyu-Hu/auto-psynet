@@ -27,5 +27,9 @@ every Control; static uses `nodes=`, chains `start_nodes=`; `Markup` for HTML; c
 ## STEP 5 — Record
 `bin/apsy-state.sh set next_action "run apsy:wire-timeline"`.
 
+**Optional code-review pass:** before handing off, dispatch the **`code-reviewer`** persona over the
+generated files — it audits the 8 PsyNet gotchas, Python parse, and secret/PII hygiene. Use this on
+first BUILD or after any non-trivial paradigm change.
+
 **Validation gate:** no `{{PLACEHOLDER}}` remains in the paradigm/trial section, and the file parses
 (`python3 -c "import ast,sys; ast.parse(open('experiment.py').read())"`).

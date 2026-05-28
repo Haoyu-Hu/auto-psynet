@@ -53,7 +53,14 @@ agents:
     file: adversarial-reviewer.md
     phases: [formulate, analyze]       # invoked from plan-review (G1) and interpret (G6) when requested
     permissionMode: plan
+  code-reviewer:                       # invoked after implement-paradigm (BUILD) + pre-run on the analysis script (ANALYZE)
+    file: code-reviewer.md
+    phases: [build, analyze]
+    permissionMode: plan
+  debugger:                            # failure-driven — invoked when a gate command exits non-zero
+    file: debugger.md
+    phases: []                          # no phase default; invoked on demand
+    permissionMode: acceptEdits         # may apply minimal fixes (and then re-run to verify)
 
-# Personas planned for later phases (authored as the roadmap reaches them):
-#   code-reviewer, debugger
+# All planned personas authored.
 roadmap_personas: []

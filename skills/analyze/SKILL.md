@@ -9,6 +9,10 @@ description: "ANALYZE step — execute the preregistered analysis EXACTLY (the l
 > the executed run, never from intuition.**
 
 ## STEP 1 — Write the analysis script
+
+*(Optional pre-run code-review)* — after writing `.apsy/analysis/analysis.py`, dispatch the
+**`code-reviewer`** persona to check the script implements §6 exactly (model, exclusions, primary
+outcome) and reports no fabricated numbers, before running it.
 From §6 (the LOCKED analysis plan) + `config/templates/analysis.py.tmpl`, write
 `.apsy/analysis/analysis.py`: load the trial CSV, apply the preregistered exclusions, fit the **locked
 model** (statsmodels / pingouin), and output the effect, 95% CI, p, N, and a primary figure.

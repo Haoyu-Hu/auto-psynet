@@ -20,6 +20,9 @@ requires the runtime (`/apsy:doctor`; install psynet or use an EC2 runtime) and 
 Read the traceback and fix the usual culprits: missing `time_estimate`, duplicate `id_`, a Control
 without `bot_response`, a reused object instance, or a render/async error. Re-run until green.
 
+**Stuck or non-obvious failure?** Dispatch the **`debugger`** persona — it reproduces, isolates,
+applies the *minimal* fix, and verifies by re-running. Never claim G2 green without an actual green run.
+
 ## STEP 4 — On green
 `bin/apsy-state.sh set gate_statuses.G2 pass`; `set stage PILOT`; `set next_action "run /apsy:pilot"`.
 Write `.apsy/reports/G2-build.md` (what was built, the passing test summary).
