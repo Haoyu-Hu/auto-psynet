@@ -7,13 +7,33 @@
   "paradigm": "",
   "deploy_target": "local",
   "gate_statuses": {
-    "G1": "pending", "G2": "pending", "G3": "pending", "G4": "pending",
-    "G5": "pending", "G6": "pending", "G7": "pending"
+    "G1": "pending",
+    "G2": "pending",
+    "G3": "pending",
+    "G4": "pending",
+    "G5": "pending",
+    "G6": "pending",
+    "G7": "pending"
   },
-  "spend": { "cap_usd": 0, "spent_usd": 0, "currency": "USD" },
-  "llm_pilot": { "backend": "", "model": "", "n": 0 },
-  "recruitment": { "platform": "prolific", "wage_per_hour": 10 },
+  "spend": {
+    "cap_usd": 0,
+    "spent_usd": 0,
+    "currency": "USD"
+  },
+  "llm_pilot": {
+    "backend": "",
+    "model": "",
+    "n": 0
+  },
+  "recruitment": {
+    "platform": "prolific",
+    "wage_per_hour": 10
+  },
   "next_action": "",
   "created": "",
-  "updated": ""
+  "updated": "",
+  "max_iterations": 1,
+  "run": {
+    "with_deployment": false
+  }
 }

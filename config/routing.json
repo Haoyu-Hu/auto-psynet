@@ -1,33 +1,219 @@
 {
   "version": "0.0.1",
-  "_comment": "Rules for /apsy:auto. Each intent → command + keyword triggers + priority. The router scores keyword matches (+ priority tie-breaker) and boosts the current-stage's next-action.",
+  "_comment": "Rules for /apsy:auto. Each intent \u2192 command + keyword triggers + priority. The router scores keyword matches (+ priority tie-breaker) and boosts the current-stage's next-action.",
   "intents": {
-    "setup":    { "command": "setup",    "priority": 9, "keywords": ["setup", "configure", "initialize", "first run", "install apsy"] },
-    "doctor":   { "command": "doctor",   "priority": 9, "keywords": ["doctor", "diagnose", "check setup", "is everything working", "dependency", "dependencies", "verify install"] },
-    "status":   { "command": "status",   "priority": 9, "keywords": ["status", "where am i", "what's next", "next step", "progress", "current stage", "resume"] },
-    "idea":     { "command": "idea",     "priority": 8, "keywords": ["idea", "research question", "hypothesis", "formulate", "design experiment", "new experiment", "new study", "start a study", "start a project"] },
-    "build":    { "command": "build",    "priority": 7, "keywords": ["build", "scaffold", "implement paradigm", "generate code", "make the experiment", "code it up", "write the experiment"] },
-    "pilot":    { "command": "pilot",    "priority": 7, "keywords": ["pilot", "simulate", "test with bots", "llm pilot", "synthetic data", "dry run", "in-silico"] },
-    "debug":    { "command": "debug",    "priority": 6, "keywords": ["debug", "run it", "try it", "see it work", "browser test", "local run"] },
-    "analyze":  { "command": "analyze",  "priority": 7, "keywords": ["analyze", "analysis", "results", "stats", "effect size", "run analysis", "export data", "findings", "interpret"] },
-    "deploy":   { "command": "deploy",   "priority": 6, "keywords": ["deploy", "go live", "real participants", "launch study", "recruit", "ship it"] },
-    "paper":    { "command": "paper",    "priority": 7, "keywords": ["paper", "write up", "manuscript", "publish", "draft", "repro package", "reproducibility"] },
-    "consent":  { "command": "consent",  "priority": 5, "keywords": ["consent", "consent form", "irb consent"] },
-    "prolific": { "command": "prolific", "priority": 4, "keywords": ["prolific", "base_payment", "wage_per_hour"] },
-    "lucid":    { "command": "lucid",    "priority": 4, "keywords": ["lucid", "cint", "global panel"] },
-    "mturk":    { "command": "mturk",    "priority": 4, "keywords": ["mturk", "mechanical turk", "amazon turk"] },
-    "region":   { "command": "region",   "priority": 4, "keywords": ["aws region", "us-east-1", "us-west", "eu-west"] },
-    "type":     { "command": "type",     "priority": 4, "keywords": ["instance type", "ec2 type", "m7i", "instance size"] }
+    "setup": {
+      "command": "setup",
+      "priority": 9,
+      "keywords": [
+        "setup",
+        "configure",
+        "initialize",
+        "first run",
+        "install apsy"
+      ]
+    },
+    "doctor": {
+      "command": "doctor",
+      "priority": 9,
+      "keywords": [
+        "doctor",
+        "diagnose",
+        "check setup",
+        "is everything working",
+        "dependency",
+        "dependencies",
+        "verify install"
+      ]
+    },
+    "status": {
+      "command": "status",
+      "priority": 9,
+      "keywords": [
+        "status",
+        "where am i",
+        "what's next",
+        "next step",
+        "progress",
+        "current stage",
+        "resume"
+      ]
+    },
+    "idea": {
+      "command": "idea",
+      "priority": 8,
+      "keywords": [
+        "idea",
+        "research question",
+        "hypothesis",
+        "formulate",
+        "design experiment",
+        "new experiment",
+        "new study",
+        "start a study",
+        "start a project"
+      ]
+    },
+    "build": {
+      "command": "build",
+      "priority": 7,
+      "keywords": [
+        "build",
+        "scaffold",
+        "implement paradigm",
+        "generate code",
+        "make the experiment",
+        "code it up",
+        "write the experiment"
+      ]
+    },
+    "pilot": {
+      "command": "pilot",
+      "priority": 7,
+      "keywords": [
+        "pilot",
+        "simulate",
+        "test with bots",
+        "llm pilot",
+        "synthetic data",
+        "dry run",
+        "in-silico"
+      ]
+    },
+    "debug": {
+      "command": "debug",
+      "priority": 6,
+      "keywords": [
+        "debug",
+        "run it",
+        "try it",
+        "see it work",
+        "browser test",
+        "local run"
+      ]
+    },
+    "analyze": {
+      "command": "analyze",
+      "priority": 7,
+      "keywords": [
+        "analyze",
+        "analysis",
+        "results",
+        "stats",
+        "effect size",
+        "run analysis",
+        "export data",
+        "findings",
+        "interpret"
+      ]
+    },
+    "deploy": {
+      "command": "deploy",
+      "priority": 6,
+      "keywords": [
+        "deploy",
+        "go live",
+        "real participants",
+        "launch study",
+        "recruit",
+        "ship it"
+      ]
+    },
+    "paper": {
+      "command": "paper",
+      "priority": 7,
+      "keywords": [
+        "paper",
+        "write up",
+        "manuscript",
+        "publish",
+        "draft",
+        "repro package",
+        "reproducibility"
+      ]
+    },
+    "consent": {
+      "command": "consent",
+      "priority": 5,
+      "keywords": [
+        "consent",
+        "consent form",
+        "irb consent"
+      ]
+    },
+    "prolific": {
+      "command": "prolific",
+      "priority": 4,
+      "keywords": [
+        "prolific",
+        "base_payment",
+        "wage_per_hour"
+      ]
+    },
+    "lucid": {
+      "command": "lucid",
+      "priority": 4,
+      "keywords": [
+        "lucid",
+        "cint",
+        "global panel"
+      ]
+    },
+    "mturk": {
+      "command": "mturk",
+      "priority": 4,
+      "keywords": [
+        "mturk",
+        "mechanical turk",
+        "amazon turk"
+      ]
+    },
+    "region": {
+      "command": "region",
+      "priority": 4,
+      "keywords": [
+        "aws region",
+        "us-east-1",
+        "us-west",
+        "eu-west"
+      ]
+    },
+    "type": {
+      "command": "type",
+      "priority": 4,
+      "keywords": [
+        "instance type",
+        "ec2 type",
+        "m7i",
+        "instance size"
+      ]
+    },
+    "run": {
+      "command": "run",
+      "priority": 8,
+      "keywords": [
+        "autonomous",
+        "auto-pilot",
+        "full pipeline",
+        "idea to paper",
+        "spec to paper",
+        "do everything",
+        "run the whole thing",
+        "/apsy:run",
+        "apsy run",
+        "spec in"
+      ]
+    }
   },
   "stage_next_action": {
     "FORMULATE": "idea",
-    "BUILD":     "build",
-    "PILOT":     "pilot",
-    "ANALYZE":   "analyze",
-    "PUBLISH":   "paper"
+    "BUILD": "build",
+    "PILOT": "pilot",
+    "ANALYZE": "analyze",
+    "PUBLISH": "paper"
   },
-  "stage_boost":      4.0,
-  "high_min_score":   4.0,
-  "high_min_margin":  1.5,
+  "stage_boost": 4.0,
+  "high_min_score": 4.0,
+  "high_min_margin": 1.5,
   "medium_min_score": 2.0
 }
