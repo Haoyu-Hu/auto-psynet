@@ -25,4 +25,4 @@ return the next seed in the **same shape** as the seed; set chain length via `ma
 
 **Data shape:** per-node seeds across generations → the transformation trajectory per chain.
 
-**Status:** recipe ready.
+**Status:** implemented — template `config/templates/experiment_imitation_chain.py.tmpl` shipped (22 placeholders, honors `start_nodes=` + `summarize_trials` same-shape gotchas + `balance_across_chains=True`); validated end-to-end on synthetic data, including a **hybrid human-AI** demo (hybrid-chain, 2026-05-28: 6 chains × 10 generations alternating subject_type; mixed-sample analysis with anchor-α detected H1b cleanly; decision rule "confirm H1 — humans and LLMs introduce structurally different transmissions" fired correctly).

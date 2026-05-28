@@ -1,0 +1,127 @@
+# experiment.py — Auto-PsyNet (transmission chain / iterated learning). Generated from
+# .apsy/research-plan.md. Every {{ NAME }}-style placeholder below (no spaces in real placeholders;
+# spaces in this comment so this line is itself not a placeholder) is filled by apsy:scaffold +
+# apsy:implement-paradigm. Respect the PsyNet gotchas: time_estimate on every Page/Trial; unique
+# Module/TrialMaker id_; bot_response on every Control; **chains use start_nodes= (NOT nodes=)**;
+# `summarize_trials` MUST return the next seed in the SAME shape as the input seed (gotcha); consent
+# first. **Hybrid runs** (humans + LLM agents alternating on the same chain) work via the LLM-
+# participant driver in bin/apsy_llm_participant.py — see skills/psynet/psynet-function/
+# synchronization.md and the science-of-learning literature on iterated learning. Worked reference:
+# psynet/trial/imitation_chain.py + demos/experiments/imitation_chain/ when present (locate via
+# APSY_PSYNET_PATH).
+import psynet.experiment
+from markupsafe import Markup
+from psynet.consent import MainConsent
+from psynet.modular_page import ModularPage, SliderControl
+from psynet.page import InfoPage
+from psynet.timeline import Timeline
+from psynet.trial.imitation_chain import (
+    ImitationChainNode, ImitationChainTrial, ImitationChainTrialMaker,
+)
+
+
+# --- Node -----------------------------------------------------------------------------------------
+# A node holds one "generation" of the transmitted content. `create_initial_seed` produces the
+# generation-0 seed (root); `summarize_trials` aggregates THIS node's trial responses into the seed
+# the NEXT node receives. The seed must keep the SAME SHAPE through the chain (gotcha).
+class {{NODE_CLASS}}(ImitationChainNode):
+    state_lo = {{STATE_LO}}
+    state_hi = {{STATE_HI}}
+
+    def create_initial_seed(self, experiment, participant):
+        # Generation 0 — root of the chain. Uniform on the state range.
+        import random
+        return {"value": random.uniform(self.state_lo, self.state_hi)}
+
+    def summarize_trials(self, trials, experiment, participant):
+        # Aggregate this node's trial response(s) into the next node's seed.
+        # With trials_per_node=1, this is just trials[0]'s answer wrapped in the seed shape.
+        if not trials:
+            return self.definition       # shouldn't happen; fall back to current seed
+        answers = [t.answer for t in trials if getattr(t, "answer", None) is not None]
+        next_value = sum(answers) / len(answers) if answers else self.definition.get("value", 0)
+        return {"value": float(next_value)}
+
+
+# --- Trial ----------------------------------------------------------------------------------------
+# Each trial: a participant lands on a chain node, sees the parent node's `value` (the inherited
+# content), and proposes a new value. The new value is `summarize_trials`-aggregated into the
+# next node's seed.
+class {{TRIAL_CLASS}}(ImitationChainTrial):
+    time_estimate = {{TRIAL_TIME}}        # seconds — REQUIRED
+
+    def show_trial(self, experiment, participant):
+        seed = self.definition           # the parent's summarized value
+        parent_value = seed.get("value")
+        lo, hi = {{NODE_CLASS}}.state_lo, {{NODE_CLASS}}.state_hi
+        prompt_html = {{PROMPT_HTML_EXPR}}     # f-string using parent_value, lo, hi
+        return ModularPage(
+            "imitation_trial",
+            Markup(prompt_html),
+            SliderControl(
+                min_value=lo,
+                max_value=hi,
+                default_value=parent_value,
+                bot_response={{BOT_RESPONSE}},    # REQUIRED; LLM-pilot driver overrides at runtime
+            ),
+            time_estimate=self.time_estimate,
+        )
+
+
+# --- TrialMaker -----------------------------------------------------------------------------------
+class {{TRIAL_MAKER_CLASS}}(ImitationChainTrialMaker):
+    pass
+
+
+# --- Start nodes ----------------------------------------------------------------------------------
+# For chain_type="across" (canonical for cultural-evolution / iterated-learning + hybrid runs):
+# start_nodes is a list of root-node instances shared across participants.
+# For chain_type="within": start_nodes is a callable that returns a per-participant root.
+start_nodes = [{{NODE_CLASS}}() for _ in range({{N_CHAINS}})]
+
+
+# --- Recruitment ----------------------------------------------------------------------------------
+def get_prolific_settings():
+    return {
+        "recruiter": "{{RECRUITER}}",
+        "base_payment": {{BASE_PAYMENT}},
+        "prolific_estimated_completion_minutes": {{EST_MINUTES}},
+        "wage_per_hour": {{WAGE_PER_HOUR}},
+    }
+
+
+recruiter_settings = get_prolific_settings()
+
+
+# --- Experiment -----------------------------------------------------------------------------------
+class Exp(psynet.experiment.Experiment):
+    label = "{{LABEL}}"
+
+    config = {
+        "initial_recruitment_size": {{INITIAL_RECRUITMENT_SIZE}},
+        **recruiter_settings,
+    }
+
+    test_n_bots = {{N_BOTS}}
+
+    timeline = Timeline(
+        MainConsent(),
+        InfoPage(Markup("{{INSTRUCTIONS_HTML}}"), time_estimate=5),
+        {{TRIAL_MAKER_CLASS}}(
+            id_="{{TRIAL_MAKER_ID}}",
+            trial_class={{TRIAL_CLASS}},
+            node_class={{NODE_CLASS}},
+            start_nodes=start_nodes,            # NOT nodes= — chains use start_nodes (gotcha)
+            chain_type="{{CHAIN_TYPE}}",         # "across" (canonical for hybrid/iterated learning) or "within"
+            max_nodes_per_chain={{MAX_NODES_PER_CHAIN}},   # chain depth (number of generations)
+            trials_per_node=1,
+            chains_per_experiment={{N_CHAINS}},
+            recruit_mode="n_participants",
+            target_n_participants={{TARGET_N}},
+            balance_across_chains=True,         # spread participants across chains (gotcha)
+        ),
+        InfoPage(Markup("{{DEBRIEF_HTML}}"), time_estimate=3),
+    )
+
+    def test_check_bot(self, bot):
+        assert not bot.failed

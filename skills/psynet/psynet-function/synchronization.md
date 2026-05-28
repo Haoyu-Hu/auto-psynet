@@ -13,3 +13,9 @@ hybrid groups (mix human participants with LLM participants via `bin/apsy_llm_pa
 **Gotchas:** real-time adds **timing, dropouts, and turn-taking** complexity — build the **async** form
 first; synchronous bot tests need deterministic bots + `advance_past_wait_pages`; design barrier/wait
 points explicitly with `wait_while`/`WaitPage`.
+
+**Status:** async hybrid implemented — `bin/apsy_llm_participant.py` drives LLM-side responses via
+OpenAI/OpenRouter; validated on synthetic data in the hybrid-chain demo (2026-05-28) with the
+`experiment_imitation_chain.py.tmpl` template. **Real-time sync (`sync_group_type ≠ None`) still
+recipe-only** — needs verification against the live psynet runtime; cf. the `graph_chain.md` recipe
+which exposes `sync_group_type` as the next-step lever.
