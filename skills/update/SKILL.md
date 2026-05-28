@@ -10,12 +10,16 @@ description: "Upgrade PsyNet and/or Dallinger in the active Python environment t
 > inside a project whose `requirements.txt` / `pyproject.toml` pins a different version.
 
 ## STEP 1 — Preflight (what's installed today)
-- Detect the active Python: `python3 --version` + `${VIRTUAL_ENV:-(none)}`. Show both.
-- Read current versions: `python3 -c 'import psynet; print(psynet.__version__)'` and the same for
-  `dallinger`. If either is **not installed**, do not "upgrade" — hand off to `/apsy:install`.
+- Resolve the "apsy python" via the engine's priority chain
+  (`--python > $VIRTUAL_ENV > $APSY_PYTHON > python3`). Show which interpreter will be upgraded + the
+  source label (engine prints both: e.g. `python: ~/.auto-psynet/venv/bin/python (APSY_PYTHON in ...)`).
+- Read current versions: `<apsy python> -c 'import psynet; print(psynet.__version__)'` and the same
+  for `dallinger`. If either is **not installed**, do not "upgrade" — hand off to `/apsy:install`.
 - Read `~/.auto-psynet/config` for `APSY_PSYNET_VERSION` / `APSY_DALLINGER_VERSION` (last recorded by
   `apsy:install` or a previous `apsy:update`) and note any mismatch with what's actually importable
   (a sign the venv changed underneath us).
+- If the user wants to target a different interpreter for this upgrade (e.g. a separate conda env),
+  accept `--python PATH` via `$ARGUMENTS` and pass it straight to the engine.
 
 ## STEP 2 — Project-pinning safety check
 If the current working dir contains `requirements.txt`, `pyproject.toml`, `setup.cfg`, or

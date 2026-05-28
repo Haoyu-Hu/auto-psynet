@@ -13,14 +13,15 @@ Run `bin/apsy-common.sh` to ensure `~/.auto-psynet/` exists and load any existin
 already exists, show it and ask whether to reconfigure or edit a single field. **Do not proceed until
 the config location is confirmed.**
 
-## STEP 2 — Verify essential dependencies
-Confirm the **essential packages** are installed and detectable (run `bin/apsy-doctor.sh`, or check
-directly): `psynet` (CLI + importable) and `dallinger`, plus the Python stats stack
-(`pandas`/`scipy`/`statsmodels`). Record the psynet install location so recipe references resolve:
-`APSY_PSYNET_PATH=$(python3 -c 'import psynet, os; print(os.path.dirname(psynet.__file__))')`.
-If anything essential is missing, **offer to dispatch `apsy:install`** to install it (with optional
-version pinning) — do not continue with missing dependencies. Only these essential packages are required — the plugin has no
-other runtime dependencies.
+## STEP 2 — Verify essential dependencies (and pick a Python)
+Run `bin/apsy-doctor.sh`; the first section reports the "apsy python" (the interpreter the engine
+resolves via `--python > $VIRTUAL_ENV > $APSY_PYTHON > python3 from PATH`) and whether `psynet` /
+`dallinger` / the stats stack (`pandas`/`scipy`/`statsmodels`) are importable by it. If `psynet` is
+missing, **offer to dispatch `apsy:install`** — that skill owns the venv/interpreter decision (it
+will offer to create a managed venv at `~/.auto-psynet/venv` and record `APSY_PYTHON`, or accept an
+opt-out interpreter path for conda/poetry/uv users). Do not continue with missing dependencies. On
+success, `apsy:install` records `APSY_PSYNET_PATH` so recipe references resolve. Only these essential
+packages are required — the plugin has no other runtime dependencies.
 
 ## STEP 3 — LLM-participant backend
 Detect `OPENAI_API_KEY` and `OPENROUTER_API_KEY` in the environment.

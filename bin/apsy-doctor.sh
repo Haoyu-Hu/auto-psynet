@@ -10,6 +10,18 @@ warn() { echo "⚠️  $1"; }
 bad()  { echo "❌ $1"; }
 have() { command -v "$1" >/dev/null 2>&1; }
 
+echo "== Python interpreter (apsy) =="
+APSY_PY="$(apsy_resolve_python 2>/dev/null || true)"
+APSY_PY_SRC="$(apsy_python_source)"
+if [[ -n "$APSY_PY" ]]; then
+  ok "apsy python: $APSY_PY  ($APSY_PY_SRC)"
+  [[ -n "${APSY_PYTHON:-}" && "$APSY_PYTHON" != "$APSY_PY" ]] && \
+    warn "APSY_PYTHON=$APSY_PYTHON is overridden by current resolution ($APSY_PY_SRC)"
+else
+  bad "no usable Python found (no --python, no \$VIRTUAL_ENV, no \$APSY_PYTHON, no python3 on PATH)"
+fi
+PY_CHECK="${APSY_PY:-python3}"
+
 echo "== LLM-participant backend =="
 if   [[ -n "${OPENAI_API_KEY:-}" ]];      then ok "OPENAI_API_KEY present (model: ${APSY_LLM_MODEL:-unset})"
 elif [[ -n "${OPENROUTER_API_KEY:-}" ]];  then ok "OPENROUTER_API_KEY present (model: ${APSY_LLM_MODEL:-unset})"
@@ -17,11 +29,11 @@ elif [[ "${APSY_LLM_PROVIDER:-}" == "ambient" ]]; then ok "ambient Claude (subag
 else warn "no LLM-participant backend — run /apsy:setup (set a key or choose ambient Claude)"; fi
 
 echo "== Dependencies (essential) =="
-if have psynet; then ok "psynet CLI: $(psynet --version 2>/dev/null | head -1 || echo present)"; else bad "psynet not installed (pip install psynet)"; fi
-psynet_path="$(python3 -c 'import psynet, os; print(os.path.dirname(psynet.__file__))' 2>/dev/null || true)"
-[[ -n "$psynet_path" ]] && ok "psynet importable: $psynet_path  (recipes reference this install; record as APSY_PSYNET_PATH)" || warn "psynet not importable by python3"
-have dallinger && ok "dallinger on PATH" || warn "dallinger not on PATH"
-python3 -c "import pandas, scipy, statsmodels" 2>/dev/null && ok "python stats stack (pandas/scipy/statsmodels)" || warn "python stats stack incomplete (pip install pandas scipy statsmodels)"
+if have psynet; then ok "psynet CLI: $(psynet --version 2>/dev/null | head -1 || echo present)"; else bad "psynet not installed (run /apsy:install)"; fi
+psynet_path="$("$PY_CHECK" -c 'import psynet, os; print(os.path.dirname(psynet.__file__))' 2>/dev/null || true)"
+[[ -n "$psynet_path" ]] && ok "psynet importable by apsy python: $psynet_path" || warn "psynet not importable by $PY_CHECK"
+"$PY_CHECK" -c "import dallinger" 2>/dev/null && ok "dallinger importable by apsy python" || warn "dallinger not importable by $PY_CHECK"
+"$PY_CHECK" -c "import pandas, scipy, statsmodels" 2>/dev/null && ok "python stats stack (pandas/scipy/statsmodels)" || warn "python stats stack incomplete (run /apsy:install --stats)"
 
 echo "== PsyNet runtime (Docker/Postgres/Redis) =="
 if have docker; then

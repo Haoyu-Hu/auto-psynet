@@ -30,3 +30,41 @@ apsy_set_config() {
 apsy_plugin_root() {
   echo "${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 }
+
+# apsy_resolve_python [override_path]
+# Echoes the resolved Python interpreter on stdout. Returns non-zero if none is usable.
+# Priority: override (--python) > $VIRTUAL_ENV/bin/python > $APSY_PYTHON > python3 from PATH.
+apsy_resolve_python() {
+  local override="${1:-}"
+  apsy_load_config
+  local py=""
+  if [[ -n "$override" ]]; then
+    py="$override"
+  elif [[ -n "${VIRTUAL_ENV:-}" && -x "${VIRTUAL_ENV}/bin/python" ]]; then
+    py="${VIRTUAL_ENV}/bin/python"
+  elif [[ -n "${APSY_PYTHON:-}" && -x "${APSY_PYTHON}" ]]; then
+    py="$APSY_PYTHON"
+  else
+    py="$(command -v python3 || true)"
+  fi
+  [[ -z "$py" || ! -x "$py" ]] && return 1
+  echo "$py"
+}
+
+# apsy_python_source [override_path] — describe how apsy_resolve_python picked the interpreter
+# (informational; used for engine + doctor logging).
+apsy_python_source() {
+  local override="${1:-}"
+  apsy_load_config
+  if [[ -n "$override" ]]; then
+    echo "--python override"
+  elif [[ -n "${VIRTUAL_ENV:-}" && -x "${VIRTUAL_ENV}/bin/python" ]]; then
+    echo "active VIRTUAL_ENV"
+  elif [[ -n "${APSY_PYTHON:-}" && -x "${APSY_PYTHON}" ]]; then
+    echo "APSY_PYTHON in $APSY_CONFIG_FILE"
+  elif [[ -n "${APSY_PYTHON:-}" ]]; then
+    echo "python3 (APSY_PYTHON=$APSY_PYTHON not executable; falling back)"
+  else
+    echo "python3 from PATH"
+  fi
+}
