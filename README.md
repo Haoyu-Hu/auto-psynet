@@ -77,18 +77,32 @@ level — real human deploy always requires explicit human approval + IRB attest
 
 # inside Claude Code:
 /apsy:setup        # first-run config (LLM backend, username, AWS, base domain)
-/apsy:install      # install psynet + dallinger into the active Python env
+/apsy:install      # install psynet + dallinger (offers a managed venv on first run)
 /apsy:doctor       # verify the runtime
 ```
 
-> **Recommended: run inside a Python virtual environment.** PsyNet pulls a large dependency tree
-> (Dallinger, Postgres bindings, Selenium, ...) — keep it isolated:
-> ```bash
-> python3 -m venv ~/apsy-env && source ~/apsy-env/bin/activate
-> ```
-> The `/apsy:install` engine auto-detects an active venv and installs there. Without a venv it falls
-> back to `--user` when site-packages aren't writable. It **never** silently passes
-> `--break-system-packages`.
+### Python interpreter / virtualenv
+
+PsyNet pulls a large dependency tree (Dallinger, Postgres bindings, Selenium, ~70 packages), so the
+plugin installs into an explicit Python interpreter rather than wherever `pip` happens to write. The
+resolver in [`bin/apsy-common.sh`](bin/apsy-common.sh) picks the interpreter via this priority chain:
+
+```
+--python PATH  >  $VIRTUAL_ENV/bin/python  >  $APSY_PYTHON (~/.auto-psynet/config)  >  python3 from PATH
+```
+
+- **First run (no venv active):** `/apsy:install` offers to create a **managed venv** at
+  `~/.auto-psynet/venv/` and records `APSY_PYTHON` in `~/.auto-psynet/config` — that becomes the
+  canonical "apsy python" for every subsequent `/apsy:install`, `/apsy:update`, and `/apsy:doctor`.
+  Run `bin/apsy-install.sh --create-venv` to do this non-interactively.
+- **Conda / poetry / uv users:** point at your interpreter via `APSY_PYTHON=/path/to/python` (set in
+  `~/.auto-psynet/config` or the environment) or pass `--python /path/to/python` to any engine call.
+- **Active venv in this shell:** `$VIRTUAL_ENV` wins over `$APSY_PYTHON` for that session.
+- **No venv, no `APSY_PYTHON`:** the engine falls back to `python3` from PATH and adds `--user` when
+  site-packages isn't writable. It **never** silently passes `--break-system-packages`.
+
+Run `/apsy:doctor` to see exactly which interpreter the plugin will use, and whether `psynet` /
+`dallinger` / the stats stack are importable from it.
 
 ## Optional: MCP server
 
