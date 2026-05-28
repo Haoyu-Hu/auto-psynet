@@ -23,4 +23,4 @@ explicitly; use `wait_while` / `WaitPage` for coordination points.
 
 **Data shape:** node/edge states over rounds; per-participant and per-network records.
 
-**Status:** recipe ready (real-time sync is advanced; verify against the runtime).
+**Status:** implemented (async) — template `config/templates/experiment_graph_chain.py.tmpl` shipped (23 placeholders, `start_nodes=` + `balance_across_chains=True` + `sync_group_type=None` per the async-first gotcha); validated end-to-end on synthetic trees (network-demo, 2026-05-28: per-depth statistics + variance-growth + anchoring analysis ran honestly with an integrity-gate "partial confirmation" verdict). Next: sync version (`sync_group_type ≠ None`) for real-time / hybrid runs — verify against the runtime.

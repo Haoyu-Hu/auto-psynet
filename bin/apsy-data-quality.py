@@ -51,19 +51,28 @@ def main():
     out["checks"]["n_rows"] = n
 
     # Detect trial-level vs participant-level shape (PsyNet's <TrialClass>.csv is trial-level — one row
-    # per trial, many rows per participant; Participant.csv is participant-level).
+    # per trial, many rows per participant; Participant.csv is participant-level). Two signals
+    # combined: (a) presence of `trial_index` / `is_repeat_trial` columns (strong; PsyNet trial-CSVs
+    # always carry these); (b) avg-rows-per-participant ratio (weak fallback when columns ambiguous).
     pid_col = next((c for c in ("worker_id", "unique_id", "prolific_id", "participant_id")
                     if c in df.columns), None)
+    trial_marker_cols = [c for c in ("trial_index", "is_repeat_trial", "active_index", "node_id", "iteration") if c in df.columns]
     is_trial_level = False
     n_participants = None
     if pid_col:
         n_participants = int(df[pid_col].nunique())
-        if n_participants > 0 and n / n_participants >= 1.5:
+        # Strong signal: trial-marker column present → trial-level
+        if trial_marker_cols and n_participants > 0:
+            is_trial_level = True
+        # Fallback signal: many rows per participant
+        elif n_participants > 0 and n / n_participants >= 1.5:
             is_trial_level = True
     out["checks"]["shape"] = "trial-level" if is_trial_level else "participant-level"
     if is_trial_level:
         out["checks"]["n_unique_participants"] = n_participants
         out["checks"]["avg_trials_per_participant"] = round(n / n_participants, 2)
+        if trial_marker_cols:
+            out["checks"]["trial_markers_detected"] = trial_marker_cols
 
     if "failed" in df.columns:
         failed = int(df["failed"].astype(str).str.lower().isin(["true", "1", "t", "yes"]).sum())

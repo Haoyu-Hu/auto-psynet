@@ -1,0 +1,113 @@
+# experiment.py — Auto-PsyNet (graph-chain / network paradigm). Generated from .apsy/research-plan.md.
+# Every {{ NAME }}-style placeholder below (no spaces in real placeholders; spaces in this comment so
+# this line is itself not a placeholder) is filled by apsy:scaffold + apsy:implement-paradigm. Respect
+# the PsyNet gotchas: time_estimate on every Page/Trial; unique Module/TrialMaker id_; bot_response on
+# every Control; **chains use start_nodes= (NOT nodes=)** — same as Gibbs; Markup() for HTML; consent
+# first; **build the async form first** (sync via sync_group_type is advanced — see
+# skills/psynet/psynet-function/synchronization.md). Worked references: PsyNet graph demos +
+# docs/tutorials/synchronization.rst (locate via APSY_PSYNET_PATH).
+import random
+import psynet.experiment
+from markupsafe import Markup
+from psynet.consent import MainConsent
+from psynet.modular_page import ModularPage, SliderControl
+from psynet.page import InfoPage
+from psynet.timeline import Timeline
+from psynet.trial.graph import GraphChainNode, GraphChainTrial, GraphChainTrialMaker
+
+
+# --- Node -----------------------------------------------------------------------------------------
+# A node holds the current "message" — whatever travels along the graph. Subclass to add state.
+# For media-network experiments, attach an Asset; for pure-numeric (this demo template) the state is
+# a single float in [STATE_LO, STATE_HI].
+class {{NODE_CLASS}}(GraphChainNode):
+    state_lo = {{STATE_LO}}                # numeric lower bound of the slider
+    state_hi = {{STATE_HI}}                # numeric upper bound
+
+    def random_seed_value(self):
+        """Initial value for a root node — uniform on [state_lo, state_hi]."""
+        return random.uniform(self.state_lo, self.state_hi)
+
+
+# --- Trial ----------------------------------------------------------------------------------------
+# Each trial: a participant lands on a node, sees the parent's message (`self.parent_state`), and
+# proposes a new value. The new value is stored as the node's state and passed to children.
+class {{TRIAL_CLASS}}(GraphChainTrial):
+    time_estimate = {{TRIAL_TIME}}        # seconds — REQUIRED
+
+    def show_trial(self, experiment, participant):
+        parent_state = getattr(self, "parent_state", None)
+        lo, hi = {{NODE_CLASS}}.state_lo, {{NODE_CLASS}}.state_hi
+        # Default the slider to the parent's value if available, else the midpoint (root case).
+        default = parent_state if parent_state is not None else (lo + hi) / 2
+        prompt_html = {{PROMPT_HTML_EXPR}}     # Python f-string using `parent_state`, `lo`, `hi`
+        return ModularPage(
+            "graph_trial",
+            Markup(prompt_html),
+            SliderControl(
+                min_value=lo,
+                max_value=hi,
+                default_value=default,
+                bot_response={{BOT_RESPONSE}},    # REQUIRED; LLM-pilot driver overrides at runtime
+            ),
+            time_estimate=self.time_estimate,
+        )
+
+
+# --- TrialMaker -----------------------------------------------------------------------------------
+class {{TRIAL_MAKER_CLASS}}(GraphChainTrialMaker):
+    pass
+
+
+# --- Topology: list of start (root) nodes; depth + branching defined here ------------------------
+# For an N-tree-of-binary-branching-of-depth-D demo, we just create N root nodes; PsyNet's graph
+# chain logic spawns children up to the configured depth and branching.
+start_nodes = [{{NODE_CLASS}}() for _ in range({{N_NETWORKS}})]
+
+
+# --- Recruitment ----------------------------------------------------------------------------------
+def get_prolific_settings():
+    return {
+        "recruiter": "{{RECRUITER}}",
+        "base_payment": {{BASE_PAYMENT}},
+        "prolific_estimated_completion_minutes": {{EST_MINUTES}},
+        "wage_per_hour": {{WAGE_PER_HOUR}},
+    }
+
+
+recruiter_settings = get_prolific_settings()
+
+
+# --- Experiment -----------------------------------------------------------------------------------
+class Exp(psynet.experiment.Experiment):
+    label = "{{LABEL}}"
+
+    config = {
+        "initial_recruitment_size": {{INITIAL_RECRUITMENT_SIZE}},
+        **recruiter_settings,
+    }
+
+    test_n_bots = {{N_BOTS}}
+
+    timeline = Timeline(
+        MainConsent(),
+        InfoPage(Markup("{{INSTRUCTIONS_HTML}}"), time_estimate=5),
+        {{TRIAL_MAKER_CLASS}}(
+            id_="{{TRIAL_MAKER_ID}}",
+            trial_class={{TRIAL_CLASS}},
+            node_class={{NODE_CLASS}},
+            start_nodes=start_nodes,        # NOT nodes= — graph_chain uses start_nodes (gotcha)
+            max_depth={{MAX_DEPTH}},         # depth of each tree from root
+            branching_factor={{BRANCHING_FACTOR}},   # children per non-leaf node (2 = binary)
+            recruit_mode="n_participants",
+            target_n_participants={{TARGET_N}},
+            balance_across_chains=True,      # spread participants across trees (gotcha)
+            sync_group_type={{SYNC_GROUP_TYPE}},     # None for async (recommended first); a SyncGroup type
+                                                     # like "single_trial" / "block" for synchronous play
+                                                     # (see skills/psynet/psynet-function/synchronization.md)
+        ),
+        InfoPage(Markup("{{DEBRIEF_HTML}}"), time_estimate=3),
+    )
+
+    def test_check_bot(self, bot):
+        assert not bot.failed
