@@ -1,0 +1,38 @@
+# G6 — Findings Verified. Scored rubric run by interpret at the end of ANALYZE. The integrity gate
+# against HARKing / p-hacking / selective reporting (ethics §2.1-§2.3): every claim must trace to the
+# preregistered analysis or be explicitly flagged as exploratory.
+gate: G6
+name: Findings Verified
+items:
+  - id: analysis_matched_preregistration
+    check: "the analysis actually run matches §6 of research-plan.md (model, IVs/DVs, covariates, comparison contrasts, exclusion rules)"
+    level: hard
+  - id: deviations_logged
+    check: "any deviation from preregistration is logged in `.apsy/decisions.md` with rationale + the preregistered + revised analyses BOTH reported"
+    level: hard
+  - id: effect_sizes_and_cis
+    check: "every reported effect has a standardized effect size + 95% CI (not just a p-value)"
+    level: hard
+  - id: multiple_comparison_handling
+    check: "if multiple comparisons were preregistered, the preregistered correction (Bonferroni / FDR / hierarchical) was applied"
+    level: hard
+  - id: exploratory_clearly_labeled
+    check: "any non-preregistered analysis is labeled `(exploratory)` in the results table and in reports/findings.md"
+    level: hard
+  - id: results_reproducible
+    check: "`bin/apsy-repro.sh --dry-run` succeeds: `analysis/` scripts run from a clean checkout against `.apsy/data/` and produce the same outputs"
+    level: hard
+  - id: synthetic_not_presented_as_human
+    check: "if pilot/synthetic data appear in reports, they are labeled as such; no synthetic numbers appear in a 'Results' section that purports to describe humans (ethics §2.4)"
+    level: hard
+  - id: robustness_sensitivity
+    check: "preregistered robustness checks (alternative models, leave-one-out, alternative exclusion thresholds) were run AND reported, OR their absence is documented in decisions.md"
+    level: advisory
+  - id: measurement_invariance
+    check: "for cross-cultural / multilingual designs: configural / metric / scalar invariance reported per §6 of the plan (blind-spots/measurement-invariance.yaml)"
+    level: mixed   # hard for cross-cultural designs; N/A otherwise
+  - id: adversarial_review
+    check: "adversarial-reviewer persona has signed off OR its objections are documented and rebutted in decisions.md"
+    level: advisory
+pass_when: "no hard item fails; advisory failures acknowledged and logged in decisions.md"
+on_fail: "document the gap (decisions.md), re-analyze if a hard item fails, OR demote the claim to 'exploratory'"

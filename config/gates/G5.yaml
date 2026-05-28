@@ -1,0 +1,39 @@
+# G5 — Data Quality. Scored rubric run by the data-quality skill before any analysis on REAL human data.
+# Enforces the preregistered exclusion rules deterministically (no post-hoc selection of who counts —
+# the integrity defense against selective exclusions, ethics §2.2). Synthetic-only pipelines (G3) get
+# a lighter version of this gate; G5 is real-data sharp.
+gate: G5
+name: Data Quality
+items:
+  - id: completion_rate
+    check: "completion rate >= the threshold preregistered in §6 of research-plan.md (default 0.7)"
+    level: hard
+  - id: target_n_reached
+    check: "the preregistered target N (after exclusions, per arm) was reached; otherwise the iteration is incomplete"
+    level: hard
+  - id: exclusions_preregistered
+    check: "every exclusion rule applied was preregistered in §6 of research-plan.md; any newly-applied rule is flagged as a deviation and logged"
+    level: hard
+  - id: exclusions_applied_deterministically
+    check: "exclusions implemented in code (.apsy/analysis/exclude.py or equivalent), runnable on raw export — reproducible without manual editing"
+    level: hard
+  - id: attention_checks
+    check: "all preregistered attention/manipulation checks have an exclusion threshold; participants failing them are excluded per the rule"
+    level: hard
+  - id: bot_screen
+    check: "real-data run includes bot/bad-actor screen (e.g. response-time floors, identical-response runs, IP/user-agent flags); failed checks excluded"
+    level: hard
+  - id: missingness_handled
+    check: "per-variable missingness is < the preregistered cap (default 10%) OR the preregistered imputation rule was applied"
+    level: hard
+  - id: duplicate_workers
+    check: "duplicate workers (same Prolific/MTurk/Lucid id across batches) flagged and the duplicate excluded"
+    level: hard
+  - id: data_provenance_clean
+    check: "human and synthetic data are NEVER mixed in the analysis input (ethics §2.4); pilot exports stay in `.apsy/pilot/`, human exports in `.apsy/data/`"
+    level: hard
+  - id: pii_stripped
+    check: "no PII in exported analysis files (worker_id hashed, IP/UA dropped from analysis input)"
+    level: hard
+pass_when: "all hard items pass — no advisory in G5 (data quality must be deterministic)"
+on_fail: "extend recruitment (if N short) OR re-export (if PII / provenance) OR halt analysis (if exclusion rule novel) — never silently relax a preregistered threshold"

@@ -1,0 +1,38 @@
+# G2 — Build Verified. Scored rubric run by test-experiment at the end of BUILD. Verifies the generated
+# PsyNet experiment actually runs (`psynet test local` green) and honors the codegen contract —
+# the 8 PsyNet gotchas the psynet-lint hook also flags. levels: hard (blocks) | advisory (flag+ack).
+gate: G2
+name: Build Verified
+items:
+  - id: psynet_test_local_green
+    check: "`psynet test local` exits 0; bot tests pass for the configured `test_n_bots`"
+    level: hard
+  - id: time_estimate_present
+    check: "every Page/PageMaker AND every Trial subclass declares a `time_estimate`"
+    level: hard
+  - id: unique_ids
+    check: "every Module / TrialMaker `id_` is globally unique; no `id_` is referenced before defined"
+    level: hard
+  - id: bot_response_present
+    check: "every `Control` has `bot_response` (value, lambda, or driver hook) — bot tests cannot raise NotImplementedError"
+    level: hard
+  - id: consent_first
+    check: "the consent module (`MainConsent` or a `(Module, Consent)` subclass) is the first element in the timeline (ethics §1.1)"
+    level: hard
+  - id: no_object_reuse
+    check: "no Page/Control object instance is reused across timeline elements (PsyNet gotcha — silent fail)"
+    level: hard
+  - id: nodes_vs_start_nodes
+    check: "static paradigms use `nodes=`; chain/network paradigms use `start_nodes=` (list for 'across', lambda for 'within')"
+    level: hard
+  - id: timeline_matches_plan
+    check: "the implemented timeline matches §4 of the locked research-plan.md (paradigm, IVs/DVs, counterbalancing, exclusion-trigger pages)"
+    level: advisory
+  - id: psynet_update_scripts_clean
+    check: "`psynet update-scripts` reports no drift between experiment.py and the generated runtime"
+    level: advisory
+  - id: requirements_pinned
+    check: "requirements.txt pins psynet/dallinger to the versions recorded in `~/.auto-psynet/config` (APSY_PSYNET_VERSION / APSY_DALLINGER_VERSION)"
+    level: advisory
+pass_when: "no hard item fails; advisory failures acknowledged and logged in decisions.md"
+on_fail: "back to BUILD (fix in implement-paradigm or wire-timeline; re-run test-experiment)"

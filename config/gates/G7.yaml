@@ -1,0 +1,32 @@
+# G7 — Iterate or Ship. The decision gate at the end of an iteration of the inner BUILD ⇄ PILOT ⇄ ANALYZE
+# loop. Unlike the other gates this is a *decision*, not a deficiency check: are we satisfied with the
+# state of the project, or do we run another iteration? The autonomy level controls whether the gate
+# can be auto-decided. G7 is the only soft gate that `autonomous` mode may auto-pass (to "ship");
+# `supervised` and `semi_autonomous` always pause here.
+gate: G7
+name: Iterate or Ship
+items:
+  - id: g6_already_passed
+    check: "G6 (Findings Verified) PASS for this iteration"
+    level: hard
+  - id: decision_explicit
+    check: "the user (or, in `autonomous` mode, the orchestrator + `adversarial-reviewer`) has produced an explicit SHIP or ITERATE decision recorded in `.apsy/decisions.md`"
+    level: hard
+  - id: iteration_rationale
+    check: "if ITERATE: a one-paragraph rationale + a single concrete change for the next iteration, scoped to one stage (FORMULATE / BUILD / PILOT / ANALYZE)"
+    level: hard
+  - id: ship_readiness
+    check: "if SHIP: the result is novel and defensible vs. the literature recorded in §8 of research-plan.md; effect direction matches the preregistered prediction OR a documented exploratory finding"
+    level: hard
+  - id: spend_within_budget
+    check: "cumulative spend (`state.json:spend.spent_usd`) <= cap; if a next iteration is planned, project remaining-budget for it"
+    level: hard
+  - id: iteration_count_sane
+    check: "iteration count <= preregistered cap (default 3); if exceeded, the rationale for an additional iteration is documented with its own decision entry"
+    level: advisory
+on_decision_ship: "advance to PUBLISH (`/apsy:paper`); freeze .apsy/ as the iteration-of-record"
+on_decision_iterate: "loop to the stage named in the rationale; bump `state.json:iteration`; append the change to iteration-log.md"
+autonomy_rules:
+  supervised: "must pause for explicit human SHIP/ITERATE decision"
+  semi_autonomous: "must pause for explicit human SHIP/ITERATE decision"
+  autonomous: "may auto-decide IF g6_already_passed AND ship_readiness AND iteration_count_sane all pass AND adversarial-reviewer concurs — otherwise pause"

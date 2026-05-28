@@ -1,0 +1,35 @@
+# G3 — Pilot Verified. Scored rubric run at the end of the LLM-pilot stage. The pilot's purpose is to
+# stress-test the *pipeline* (build → run → export → analyze) on synthetic data — NOT to validate human
+# findings (LLMs may bias signal, ethics §2.5). Synthetic data is NEVER presented as human data (ethics §2.4).
+gate: G3
+name: Pilot Verified
+items:
+  - id: pipeline_end_to_end
+    check: "the LLM-pilot ran end-to-end: `apsy-pilot.sh` completed, `psynet export local` produced .csv exports"
+    level: hard
+  - id: no_async_render_errors
+    check: "no async/render errors in the run log (deadlocks, missing assets, control-not-found, page-not-rendered)"
+    level: hard
+  - id: analysis_executes_on_pilot
+    check: "the preregistered analysis script (`.apsy/analysis/`) executes on pilot data without error — same code that will run on human data"
+    level: hard
+  - id: control_parsing_clean
+    check: "LLM-participant answers parsed cleanly into the expected control schema (<5% retry rate / no malformed-answer failures)"
+    level: hard
+  - id: design_doable
+    check: "the LLM didn't get stuck/confused at any step (no timeout loops, no 'I cannot answer this' chains > 1)"
+    level: mixed   # 1-2 confusions are advisory; >5% or repeated dead-ends are hard
+  - id: transcript_recorded
+    check: "full participant transcript (page → reasoning → answer) saved in `.apsy/pilot-transcripts/` for auditability"
+    level: hard
+  - id: synthetic_label_applied
+    check: "all pilot exports tagged `provenance=synthetic_llm_pilot`; participants tagged with `is_llm=true` and `subject_model` (ethics §2.4)"
+    level: hard
+  - id: cost_within_cap
+    check: "total LLM-pilot spend within `state.json:llm_pilot.cap_usd` (if set); recorded in iteration-log.md"
+    level: advisory
+  - id: design_assumptions_held
+    check: "obvious design assumptions still hold under LLM stress (e.g. all conditions reachable; no condition got 0 trials)"
+    level: advisory
+pass_when: "no hard item fails; advisory failures acknowledged and logged in decisions.md"
+on_fail: "back to BUILD (if codegen bug) or back to FORMULATE (if design bug surfaced by the pilot)"
