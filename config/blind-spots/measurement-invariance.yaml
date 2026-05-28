@@ -1,0 +1,77 @@
+# Blind-spot: measurement invariance. Referenced by config/gates/G6.yaml (the `measurement_invariance`
+# item, marked `mixed` — HARD for cross-cultural/multilingual designs, N/A otherwise). Anchors
+# the apsy:localize skill's STEP 7 and the apsy:interpret skill's cross-cultural section.
+name: measurement_invariance
+category: cross-cultural
+applies_when: ".apsy/research-plan.md §4 declares more than one locale / language / cultural group"
+level_in_g6: hard      # for the populations in apply_when; advisory otherwise
+
+# ---------------------------------------------------------------------------
+# The standard invariance hierarchy (Van de Schoot et al. 2012; Putnick & Bornstein 2016)
+# ---------------------------------------------------------------------------
+levels:
+  - id: configural
+    name: Configural invariance
+    asks: "Do the groups share the same factor structure / qualitative pattern?"
+    multi_indicator: "same number of factors; same items load on each factor in every group"
+    single_indicator: "same sign of effect across groups (e.g. nature > urban holds in every locale)"
+    failure_means: "the groups aren't measuring the same construct at all — no cross-group claim is interpretable"
+  - id: metric
+    name: Metric (weak) invariance
+    asks: "Are the magnitudes comparable across groups?"
+    multi_indicator: "factor loadings are statistically equivalent across groups"
+    single_indicator: "effect-size magnitudes (Cohen's d / etc.) are similar across groups within tolerance (e.g. CIs overlap)"
+    failure_means: "the construct exists in each group but is more / less salient — covariate relationships are interpretable, raw magnitude comparisons are not"
+  - id: scalar
+    name: Scalar (strong) invariance
+    asks: "Are the intercepts / baseline ratings comparable across groups?"
+    multi_indicator: "item intercepts statistically equivalent across groups"
+    single_indicator: "baseline mean ratings (control condition) similar across groups within tolerance"
+    failure_means: "groups differ in scale use / translation-induced offset — mean differences across groups are uninterpretable; only WITHIN-group effects are valid"
+
+# ---------------------------------------------------------------------------
+# Pitfalls — what to flag during apsy:design + apsy:interpret
+# ---------------------------------------------------------------------------
+pitfalls:
+  - id: translation_offset
+    description: "Translated anchors (e.g. 'very pleasant' → 'sehr angenehm') may not have identical psychological weight; participants anchor differently per language. Visible as a baseline-rating offset (scalar invariance failure)."
+    detection: "compare control-condition / overall mean ratings across locales; difference > 0.5 SD signals a likely scalar failure"
+    mitigation: "report within-locale effects only; OR collect a calibration-anchor task (rate non-target items with known cross-cultural valence)"
+  - id: response_style_culture
+    description: "Cross-cultural differences in extreme-vs-moderate response style on Likert scales (well-documented for East-Asian vs Western samples)."
+    detection: "compare within-participant SD of ratings across locales; large SD differences signal differential style"
+    mitigation: "ipsatize (mean-center) per-participant before cross-locale comparison; OR use rank-based / forced-choice tasks"
+  - id: ceiling_floor_per_locale
+    description: "Some locales hit ceiling/floor on the scale (e.g. universally rate one stimulus 7/7) — masks variance, breaks metric invariance."
+    detection: "per-locale per-stimulus rating-distribution check; >70% at scale boundary in any locale = flag"
+    mitigation: "wider response scale; OR drop the saturated stimulus; document the deviation in decisions.md"
+  - id: backward_translation_required
+    description: "A naive forward translation may drift from the original meaning. Standard cross-cultural method: back-translate by an independent translator and compare to the original."
+    detection: "if any locale was LLM-translated only (per the apsy:localize skill), this is a hard advisory flag"
+    mitigation: "obtain human back-translations before launch (Track B / G4)"
+  - id: unequal_n_per_locale
+    description: "Unequal sample sizes across locales reduce power for the lower-N groups and complicate variance comparisons."
+    detection: "ratio max_n / min_n > 3 across locales"
+    mitigation: "preregister minimum-N-per-locale; recruit more in low-N locales OR pre-register weighting"
+
+# ---------------------------------------------------------------------------
+# G6 checking — what apsy:interpret should report
+# ---------------------------------------------------------------------------
+report_in_g6_when_cross_cultural:
+  required:
+    - "per-locale primary effect (point + CI)"
+    - "configural-level verdict (pattern agreement)"
+    - "metric-level verdict (magnitude tolerance — preregistered band)"
+    - "scalar-level verdict (baseline comparability — preregistered tolerance)"
+    - "which inferences are licensed at the achieved invariance level (e.g. 'metric held → covariate relationships interpretable; scalar failed → cross-locale means are NOT')"
+  forbidden:
+    - "report a cross-locale main effect without first reporting which invariance levels held"
+    - "drop a locale post-hoc because its data 'doesn't match' — that's a preregistered exclusion decision, not an analysis discovery"
+
+# ---------------------------------------------------------------------------
+# References (for the literature-scholar persona to cite if needed)
+# ---------------------------------------------------------------------------
+references:
+  - "Van de Schoot, R., Lugtig, P., & Hox, J. (2012). A checklist for testing measurement invariance. European Journal of Developmental Psychology, 9, 486–492."
+  - "Putnick, D. L., & Bornstein, M. H. (2016). Measurement invariance conventions and reporting. Developmental Review, 41, 71–90."
+  - "Vandenberg, R. J., & Lance, C. E. (2000). A review and synthesis of the measurement invariance literature. Organizational Research Methods, 3, 4–70."
