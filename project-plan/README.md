@@ -4,10 +4,15 @@
 > through a verified research plan → a working PsyNet experiment → LLM-piloted and human deployment →
 > data analysis and iteration → a publication-ready scientific paper.
 
-**Plugin call name:** `apsy` (`/apsy:*`) · **Repo:** `auto-psynet` · **Status:** planning (Stage 0)
+**Plugin call name:** `apsy` (`/apsy:*`) · **Repo:** `auto-psynet` · **Status:** Phase 0 foundations
+shipped (manifest, engine, 30 skills · 21 commands · 9 personas · 4 hooks · 1 optional MCP server;
+assembly green on `main`). The interpreter resolver + managed venv (`/apsy:install --create-venv`),
+the dep + version check (`bin/apsy-check.sh`), and the SessionStart `first-run-nudge` that ties
+`/apsy:setup` as the entry point all landed alongside the Phase 0 foundations. Phase 1 (core loop on
+synthetic data) is the active build target; see [`05-roadmap.md`](05-roadmap.md).
 
-This directory is the living plan for building the plugin. It is the output of the kickoff
-"overview + what's necessary" step. Read the documents in order.
+This directory is the **living plan** for the plugin — the design intent and the rationale, kept in
+sync with what's actually shipped. Read the documents in order.
 
 ## Documents
 

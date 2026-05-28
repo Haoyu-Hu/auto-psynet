@@ -11,7 +11,7 @@ traps; and write it up. Each step has well-known failure modes (underpowered des
 manipulations, demand characteristics, p-hacking, HARKing, bot/bad-actor contamination), and most of
 the elapsed time is *engineering and logistics*, not science.
 
-[PsyNet](../materials/psynet) already removes a huge part of this cost: it turns a complex experiment
+[PsyNet](https://gitlab.com/PsyNetDev/PsyNet) already removes a huge part of this cost: it turns a complex experiment
 into a single declarative Python `Experiment` class and deploys it — server provisioning, recruitment,
 payment, monitoring — with one command. But authoring the experiment correctly, designing it
 rigorously, and analyzing it soundly still require a skilled research engineer.

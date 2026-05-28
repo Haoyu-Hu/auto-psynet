@@ -1,7 +1,12 @@
 # 02 — Reference Synthesis
 
-What we extracted from the four repos in [`materials/`](../materials), and precisely what we **reuse**,
-**adapt**, or **avoid** for Auto-PsyNet. These are the conclusions of a deep read of each codebase.
+What we extracted from the four reference repos (PsyNet, Dallinger, octopus, claude-mem) and precisely
+what we **reuse**, **adapt**, or **avoid** for Auto-PsyNet. These are the conclusions of a deep read of
+each codebase.
+
+> **Dev-only**: during authoring, those repos sit alongside this one in `materials/` (gitignored, not
+> shipped) so they can be greped locally. They are *not* dependencies of the plugin and don't appear in
+> the released package; recipe references resolve against the **installed** `psynet` (`APSY_PSYNET_PATH`).
 
 ---
 
@@ -189,10 +194,12 @@ truth; relying on its write API; assuming `basename(cwd)` project scoping is saf
 
 ---
 
-## 2.6 Real experiment examples (`experiment-examples/`)
+## 2.6 Real experiment examples (`experiment-examples/`, dev-only)
 
-Beyond PsyNet's bundled `demos/`, the repo includes two **real** experiments (Jacoby lab, Cornell) that
-are higher-fidelity codegen references:
+Beyond PsyNet's bundled `demos/`, the dev tree includes two **real** experiments (Jacoby lab, Cornell)
+that serve as higher-fidelity codegen references for authoring. Like `materials/`, this directory is
+gitignored and not shipped — it informs how the `psynet-engineer` persona and BUILD-stage skills are
+written, but the released plugin contains no copies of these experiments.
 
 - **`create_and_rate_basic/`** — a Create-and-Rate study. Reference for: a real **custom consent**
   (`consent_science_of_learning.py` — a `(Module, Consent)` subclass taking `DURATION`/`PAYMENT`, i18n via

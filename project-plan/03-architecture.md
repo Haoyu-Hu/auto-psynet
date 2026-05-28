@@ -13,16 +13,17 @@ a file-based state/memory layer (the "notebook") and a pluggable runtime (the "l
 ┌──────────────────────────────────────────────────────────────────────────────────┐
 │  CLAUDE CODE PLUGIN  (the brain — declarative)                                     │
 │                                                                                    │
-│  Commands  /apsy:idea /apsy:design /apsy:build /apsy:pilot /apsy:deploy                 │
-│  (entry)   /apsy:analyze /apsy:paper  •  /apsy:auto (router)  •  /apsy:status /doctor  │
+│  Commands  /apsy:setup /apsy:install /apsy:update /apsy:doctor /apsy:status              │
+│  (entry)   /apsy:idea /apsy:build /apsy:pilot /apsy:debug /apsy:deploy /apsy:analyze     │
+│            /apsy:paper • /apsy:auto (router) /apsy:run (autonomous) /apsy:add-recipe     │
 │      │                                                                             │
 │      ▼                                                                             │
 │  Skills (EXECUTION CONTRACTS) ── orchestrate ──▶ Agents / Personas (expert brains) │
 │   formulate·design·power·plan-review │ scaffold·implement·test │ llm-pilot·deploy  │
 │   ·recruit │ data-quality·analyze·interpret │ write-paper·repro-package            │
 │      │                                                                             │
-│  Hooks: SessionStart(load state+memory, router) · PreToolUse(spend gate, PsyNet    │
-│         lint) · PostToolUse(quality gate, capture) · SessionEnd(snapshot)          │
+│  Hooks: SessionStart(load-experiment-context, first-run-nudge) · PreToolUse(       │
+│         psynet-lint on experiment.py, spend-gate G4 on Bash) [+ PostToolUse]       │
 └──────────────────────────────────────────────────────────────────────────────────┘
         │ shells out to                                  │ reads/writes
         ▼                                                ▼
@@ -54,40 +55,62 @@ auto-psynet/                          # the plugin repo (this repo)
 ├── .claude-plugin/
 │   ├── plugin.json                   # name:"apsy" (LOCKED), version, explicit skills[] + commands[]
 │   ├── marketplace.json              # marketplace entry (name must match plugin.json)
-│   ├── hooks.json                    # SessionStart / PreToolUse / PostToolUse / SessionEnd wiring
-│   └── PLUGIN_NAME_LOCK.md           # why name stays "psy" (octopus pattern)
-├── .claude/
-│   └── agents/                       # auto-discovered subagents (the persona library, see doc 04)
-├── skills/                           # SKILL.md execution contracts (one dir each, see doc 04)
+│   └── PLUGIN_NAME_LOCK.md           # why the name stays "apsy"
+├── commands/                         # slash command .md files (see doc 04) — 21 commands
+├── skills/                           # SKILL.md execution contracts (one dir each, see doc 04) — 30 skills
+│   ├── setup/ install/ update/ doctor/ status/
 │   ├── formulate/ design/ power-analysis/ analysis-plan/ plan-review/
 │   ├── scaffold/ implement-paradigm/ wire-timeline/ test-experiment/
-│   ├── llm-pilot/ deploy/ recruit/
-│   ├── data-quality/ analyze/ interpret/ iterate/
+│   ├── llm-pilot/ debug/ deploy/ recruit/
+│   ├── data-quality/ analyze/ interpret/ iterate/ export-data/
 │   ├── write-paper/ repro-package/
-│   ├── psynet/                       # PsyNet knowledge skill: SKILL.md index + psynet-function/ (paradigm + cross-cutting recipes)
-│   └── blocks/                       # shared snippets (gate rubrics)
-├── commands/                         # slash command .md files (see doc 04)
-├── agents/
-│   ├── personas/                     # full persona library (methodologist, statistician, …)
-│   └── config.yaml                   # routing registry: persona → stage → model → tools
-├── hooks/                            # hook scripts (.sh) referenced by .claude-plugin/hooks.json
-├── bin/ + engine/                    # the deterministic engine (apsy-* wrappers + lib/ modules)
+│   ├── auto/ run/ add-recipe/
+│   └── psynet/                       # PsyNet knowledge hub: SKILL.md index + psynet-function/ (8 paradigm + 8 cross-cutting recipes)
+├── agents/                           # persona library + routing registry (flat)
+│   ├── *.md                          # personas (methodologist, statistician, psynet-engineer, …) — 9 personas
+│   └── config.yaml                   # routing: persona → stage → model → tools
+├── hooks/                            # lifecycle hooks — scripts + their JSON wiring (NOT in .claude-plugin/)
+│   ├── hooks.json                    # SessionStart / PreToolUse wiring (lives here, not .claude-plugin/)
+│   ├── load-experiment-context.sh    # SessionStart: inject .apsy/state.json if in an experiment dir
+│   ├── first-run-nudge.sh            # SessionStart: nudge /apsy:setup when ~/.auto-psynet/config absent
+│   ├── psynet-lint.sh                # PreToolUse Edit|Write: inject PsyNet code-gen gotchas
+│   └── spend-gate.sh                 # PreToolUse Bash: HARD G4 block on real deploy/recruit
+├── bin/                              # the deterministic engine (apsy-*.{sh,py} wrappers)
+│   ├── apsy-common.sh                #   shared: config I/O + apsy_resolve_python (interpreter resolver)
+│   ├── apsy-config.sh                #   user-level config get/set (~/.auto-psynet/config)
+│   ├── apsy-install.sh apsy-update*  #   pip install/upgrade + managed venv (--create-venv)
+│   ├── apsy-check.sh                 #   focused dep + version check (deps, PyPI latest, drift)
+│   ├── apsy-doctor.sh apsy-state.sh  #   diagnostics + per-experiment state
+│   ├── apsy-debug.sh apsy-deploy.sh  #   debug-target selector + deploy adapter (local/llm-pilot/ec2)
+│   ├── apsy-recruit.sh               #   recruitment status (Prolific/Lucid/MTurk thin)
+│   ├── apsy-route.py apsy-run.py     #   smart router + autonomous pipeline state machine
+│   ├── apsy-power.py apsy-data-quality.py   #   stats helpers (effect sizes, exclusions)
+│   ├── apsy-repro.sh                 #   OSF-ready repro package assembler
+│   └── apsy-add-recipe.py            #   extend the PsyNet knowledge pack (auto-index parent SKILL.md)
 ├── config/
 │   ├── pipeline.yaml                 # the 5-stage workflow-as-code (agents, gates, thresholds)
+│   ├── ethics-policy.md              # G4 guardrails, IRB attestation, spend caps
 │   ├── gates/                        # gate rubrics (G1..G7) as scored checklists
-│   ├── blind-spots/                  # methodological/statistical pitfall library (incl. measurement invariance)
+│   ├── affinity.yaml                 # question-archetype × paradigm selector matrix
 │   ├── domains/                      # Domain Design-Priors (paradigm recipes are in skills/psynet/psynet-function/)
-│   └── templates/                    # .apsy/ state-file templates, experiment scaffolds
-├── mcp-server/                       # OPTIONAL, opt-in (P2): thin tools over the engine
-├── tests/                            # plugin self-tests (assembly validation, skill lint, e2e)
+│   ├── blind-spots/                  # methodological/statistical pitfall library (incl. measurement invariance)
+│   └── templates/                    # .apsy/ state-file templates + experiment scaffolds + paper.md.tmpl
+├── mcp-server/                       # OPTIONAL, opt-in (off by default): stdlib MCP server (6 tools, thin engine wrappers)
+├── tests/                            # plugin self-tests (validate-assembly.sh)
+├── project-plan/                     # this directory: the living design
 ├── CLAUDE.md                         # plugin operating instructions (policies, file rules)
 └── README.md
 ```
 
-**Manifest rules (from octopus):** `plugin.json.name = "apsy"` is locked and equals the `/apsy:*`
-namespace; npm/repo name is separate (`auto-psynet`); `skills` and `commands` are explicit arrays;
-agents are auto-discovered; hooks live in `.claude-plugin/hooks.json`. A `tests/validate-assembly`
-smoke test asserts every listed skill/command exists and frontmatter parses.
+> **Dev-only references (gitignored, NOT shipped):** `materials/` (PsyNet + Dallinger clones for grep/reference)
+> and `experiment-examples/` (real Cornell Jacoby-lab studies). They power authoring but never appear in the
+> released plugin; recipe references resolve against the **installed** psynet package via `APSY_PSYNET_PATH`.
+
+**Manifest rules:** `plugin.json.name = "apsy"` is locked and equals the `/apsy:*` namespace; npm/repo
+name is separate (`auto-psynet`); `skills` and `commands` are explicit arrays in `plugin.json`; agents
+are auto-discovered from `agents/`; **hooks live in `hooks/hooks.json` next to the hook scripts** (not
+in `.claude-plugin/`). `tests/validate-assembly.sh` asserts every listed skill/command exists and
+frontmatter parses.
 
 ## 3.3 The pipeline (workflow-as-code)
 
@@ -234,6 +257,14 @@ anything else.
   participants (or ambient fallback); **AWS** for `ec2` provisioning; literature APIs (arXiv / Semantic
   Scholar) for FORMULATE; **Prolific (default), Lucid, or MTurk** for recruitment (Track B); OSF API for
   the repro package (P2); a Python stats runtime (`pandas`/`scipy`/`statsmodels`/`pingouin`; R when needed).
+- **Python interpreter (the "apsy python"):** resolved by `bin/apsy-common.sh:apsy_resolve_python`
+  with priority `--python PATH > $VIRTUAL_ENV > $APSY_PYTHON > python3 from PATH`. **`/apsy:install`
+  --create-venv** provisions a managed venv at `~/.auto-psynet/venv/` on first run and records
+  `APSY_PYTHON` in `~/.auto-psynet/config` so every subsequent `/apsy:install` / `/apsy:update` /
+  `/apsy:doctor` / `/apsy:check` resolves to the same interpreter. Conda / poetry / uv users opt out
+  by setting `APSY_PYTHON` to their interpreter path. `bin/apsy-check.sh` is the single source of
+  truth for "are the essential deps present + current?" and is consumed by both `/apsy:setup` STEP 2
+  and `/apsy:doctor`.
 
 ## 3.10 Autonomy & safety model
 

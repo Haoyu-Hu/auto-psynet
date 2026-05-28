@@ -154,18 +154,21 @@ engine). Namespace `/apsy:*` (locked = plugin name).
 
 | Command | Pri | Maps to |
 |---------|-----|---------|
+| `/apsy:setup` | **P0** | **the entry point** — first-run config: pick Python interpreter (optionally create managed venv at `~/.auto-psynet/venv` + record `APSY_PYTHON`), run dep + version check (`apsy-check`), offer `/apsy:install` on missing, configure LLM-participant backend + username + AWS + base domain + consent default. **The SessionStart `first-run-nudge` hook redirects users here on first session.** |
+| `/apsy:install` | **P0** | auto-install essential deps (`psynet` + `dallinger` + optional Python stats stack) with optional version pinning. Owns the venv/interpreter decision (`--create-venv` / `--python PATH`). Records `APSY_PYTHON`, `APSY_PSYNET_VERSION`, `APSY_DALLINGER_VERSION`, `APSY_PSYNET_PATH`. |
+| `/apsy:update` | **P0** | upgrade PsyNet / Dallinger to specified or latest. Reuses the install engine via `--upgrade`; prints `old → new` diff; warns on project-pin desync. |
+| `/apsy:doctor` | **P0** | environment validation — reports the resolved "apsy python" + source, delegates the dep/version section to `apsy-check`, then checks Docker/Postgres/Redis, LLM key, AWS, config. |
+| `/apsy:status` | **P0** | where am I (reads `<exp>/.apsy/state.json`) |
 | `/apsy:idea <text>` | **P0** | start FORMULATE (formulate → design → power → analysis-plan → plan-review) |
 | `/apsy:build` | **P0** | run BUILD (scaffold → implement → wire-timeline → test) |
+| `/apsy:debug` | **P0** | debug-mode selector: run locally or on a provisioned EC2 instance |
 | `/apsy:pilot` | **P0** | run llm-pilot (+ `debug`), gate G3 |
 | `/apsy:analyze` | **P0** | export → (quality) → analyze → interpret |
-| `/apsy:deploy` | P1 | gated human deploy + recruit (G4) |
+| `/apsy:deploy` | P1 | gated human deploy + recruit (G4 HARD at every autonomy level) |
 | `/apsy:paper` | P1 | write-paper (+ repro-package) |
-| `/apsy:auto [text]` | P1 | the smart router: NL intent → right stage/skill (octopus `auto.md` rule-based pattern) |
-| `/apsy:run <idea>` | P2 | the autonomous full pipeline (Dark-Factory analog), honoring autonomy level + hard gates |
-| `/apsy:status` | **P0** | where am I (reads `.apsy/state.json`) |
-| `/apsy:doctor` | **P0** | environment validation |
-| `/apsy:setup` | **P0** | first-run config: LLM-participant backend + username/server prefix + creds |
-| `/apsy:debug` | **P0** | debug-mode selector: run locally or on a provisioned EC2 instance |
+| `/apsy:auto [text]` | P1 | smart router: NL intent → right stage/skill (rule-based, stage-aware) |
+| `/apsy:run <idea>` | P2 | autonomous full pipeline (idea → paper), honoring autonomy level + hard gates |
+| `/apsy:add-recipe` | P1 | extend the PsyNet knowledge pack — add a new file under `skills/psynet/psynet-function/` (paradigm or cross-cutting) and auto-insert a row into the parent index table |
 | `/apsy:region` | P1 | override the AWS region for EC2 (default `us-east-1`) |
 | `/apsy:type` | P1 | override the EC2 instance type (default auto-sized `m7i.{N}xlarge`) |
 | `/apsy:consent` | P1 | set the consent (default PsyNet `MainConsent`): separate-file path? · class/function to import · how to use it |
@@ -175,18 +178,19 @@ engine). Namespace `/apsy:*` (locked = plugin name).
 
 ## 4.4 Hooks
 
-Wired in `.claude-plugin/hooks.json` (octopus conventions: matchers with `if`/regex guards, JSON
-`{"decision":...}` returns, uniform stderr exit trap).
+Wired in **`hooks/hooks.json`** (next to the hook scripts; not in `.claude-plugin/`). Conventions:
+matchers with regex guards, JSON `{"hookSpecificOutput":...}` returns, uniform exit handling.
 
-| Event | Hook | Pri | Does |
-|-------|------|-----|------|
-| SessionStart | `load-experiment-context` | **P0** | If in an experiment dir, inject `.apsy/state.json` + recent `iteration-log.md`. Makes sessions resumable across the data-collection gap. |
-| SessionStart | `router-inject` | P1 | Inject the `/apsy:auto` routing contract. |
-| PreToolUse (Edit/Write on `experiment.py`) | `psynet-lint` | **P0** | Inject the 8 code-gen gotchas; flag obvious violations (missing `time_estimate`, duplicate `id_`, missing `bot_response`) before write. |
-| PreToolUse (Bash: `psynet deploy`, recruiter/API, spend) | `spend-gate` | **P0** | **Hard block** real deploy/recruit/payment unless an approval token + configured cap are present (G4). Never auto-passed. |
-| PostToolUse (after `psynet test`/gate/analysis) | `quality-gate` | P1 | Parse the gate/test result; `{"decision":"block"}` on failure; append outcome to `iteration-log.md`. |
-| PostToolUse (`*`) | `capture` | P2 | Append durable outcomes to the `.apsy/` state files. |
-| SessionEnd | `snapshot-state` | P1 | Flush `.apsy/state.json`; record next action. |
+| Event | Hook | Pri | Status | Does |
+|-------|------|-----|--------|------|
+| SessionStart | `load-experiment-context` | **P0** | shipped | If in an experiment dir, inject `.apsy/state.json` + recent `iteration-log.md`. Makes sessions resumable across the data-collection gap. |
+| SessionStart | `first-run-nudge` | **P0** | shipped | When `~/.auto-psynet/config` doesn't exist, emit an `additionalContext` recommending `/apsy:setup`. Silent forever once setup is complete. **Ties `/apsy:setup` as the start of the plugin.** |
+| PreToolUse (Edit/Write/MultiEdit on `experiment.py`) | `psynet-lint` | **P0** | shipped | Inject the 8 code-gen gotchas; flag obvious violations (missing `time_estimate`, duplicate `id_`, missing `bot_response`) before write. |
+| PreToolUse (Bash: `psynet deploy`, recruiter/API, spend) | `spend-gate` | **P0** | shipped | **Hard block** real deploy/recruit/payment unless `APSY_DEPLOY_APPROVED=1` (set only by `/apsy:deploy` after G4) + configured cap are present. Never auto-passed. |
+| SessionStart | `router-inject` | P2 | planned | Inject the `/apsy:auto` routing contract (deferred; the existing router skill already handles this on-demand). |
+| PostToolUse (after `psynet test`/gate/analysis) | `quality-gate` | P1 | planned | Parse the gate/test result; block on failure; append outcome to `iteration-log.md`. |
+| PostToolUse (`*`) | `capture` | P2 | planned | Append durable outcomes to the `.apsy/` state files. |
+| SessionEnd | `snapshot-state` | P1 | planned | Flush `.apsy/state.json`; record next action. |
 
 ## 4.5 MCP server (optional, P2)
 

@@ -12,19 +12,33 @@ capability work (**Track A**, Phases 2–3) can proceed in the current environme
 hosting decision (D1). Real human deployment (**Track B**, Phase 4) is a parallel track slotted in
 whenever D1 + a budget + a chosen study are ready — it is *not* gated behind finishing all of Track A.
 
-### Phase 0 — Foundations & environment  *(prerequisite)*
+### Phase 0 — Foundations & environment  *(prerequisite — substantially complete)*
 Stand up the skeleton and prove the lab works.
-- Plugin manifest (`.claude-plugin/`, `name:"apsy"` locked), directory layout, `CLAUDE.md` operating
-  policies, `tests/validate-assembly` smoke test.
-- The **engine** skeleton: `bin/apsy-*` wrappers around the `psynet` CLI; a place for analysis runners.
-- `.apsy/` state templates + `state.json` schema; `/apsy:status`.
-- **`/apsy:setup`** — configure the LLM-participant backend (OpenAI/OpenRouter key, or ambient Claude),
-  capture the username/server prefix + base domain + AWS creds, write `~/.auto-psynet/config`.
-- **`/apsy:doctor`** — validate Docker/Postgres/Redis, `psynet` install, LLM key (or fallback), AWS
-  creds, deployment-backend reachability, and dependency detection (psynet/dallinger).
-- **`debug` target selector** — wire the deployment adapter so a hello-world runs either locally or on a
-  Dallinger-provisioned `ec2` instance (resolves D1; no reliance on local Docker if EC2-first).
-- **Exit criterion:** a hello-world runs via `debug` (local or `ec2`); `setup` + `doctor` green.
+- ✅ Plugin manifest (`.claude-plugin/`, `name:"apsy"` LOCKED), directory layout, `CLAUDE.md` operating
+  policies, `tests/validate-assembly` smoke test green.
+- ✅ The **engine** (`bin/apsy-*`): `apsy-common.sh` (interpreter resolver), `apsy-config.sh`,
+  `apsy-install.sh` / `apsy-update.sh` paths (single engine, `--upgrade` flag), `apsy-check.sh`
+  (dep + version check), `apsy-doctor.sh`, `apsy-debug.sh`, `apsy-deploy.sh`, `apsy-recruit.sh`,
+  `apsy-state.sh`, `apsy-route.py`, `apsy-run.py`, `apsy-power.py`, `apsy-data-quality.py`,
+  `apsy-repro.sh`, `apsy-add-recipe.py` — all wrapping the real `psynet` CLI / pip / analysis stack.
+- ✅ `.apsy/` state templates + `state.json` schema; `/apsy:status`.
+- ✅ **`/apsy:setup`** — first-run config + dep check; **tied as the start of the plugin** via the
+  `first-run-nudge` SessionStart hook (nudges `/apsy:setup` when `~/.auto-psynet/config` is absent).
+- ✅ **`/apsy:install`** — auto-install psynet + dallinger + stats stack with version pinning; **owns
+  the interpreter decision** — auto-detects venv/`APSY_PYTHON`; offers managed venv at
+  `~/.auto-psynet/venv` (`--create-venv`); accepts opt-out via `--python PATH` for conda/poetry/uv.
+- ✅ **`/apsy:update`** — upgrade psynet/dallinger to specified or latest; reuses the install engine
+  via `--upgrade`; prints `old → new` diff; warns on project-pin desync.
+- ✅ **`/apsy:doctor`** — validates the resolved "apsy python" + delegated dep check (`apsy-check`),
+  plus Docker/Postgres/Redis, LLM key (or fallback), AWS creds, base domain, config.
+- ✅ **`/apsy:add-recipe`** — extension command: add a new file under `skills/psynet/psynet-function/`
+  (paradigm or cross-cutting) and auto-insert a row in the parent index table.
+- ✅ **`debug` target selector** — `local` (`psynet debug local`) and `ec2` (Dallinger provisioning)
+  backends wired into `apsy-debug.sh` (resolves D1).
+- **Exit criterion (met for plugin-side foundations):** the plugin loads, `apsy:setup` / `apsy:install`
+  / `apsy:doctor` / `apsy:status` work, assembly is green, the interpreter resolver + managed-venv
+  path are operational. **Remaining external dependency for "hello-world on ec2":** an AWS account
+  with the configured base domain — the only Phase 0 item that can't be exercised on this dev box.
 
 ### Phase 1 — The core loop on synthetic data (MVP)
 FORMULATE → BUILD → LLM-PILOT → synthetic ANALYZE, supervised, local, **static-trials paradigm only**.
@@ -85,8 +99,8 @@ start once Phase 1 + one paradigm + a host exist; it *is* gated behind D1 (publi
 
 | M | Milestone | Phase |
 |---|-----------|-------|
-| M0 | `doctor` green + `psynet debug local` runs hello-world | 0 |
-| M1 | Plugin loads in Claude Code; `/apsy:status` + assembly test pass | 0 |
+| M0 | `doctor` green + `psynet debug local` runs hello-world | 0 — *infra-dependent (Docker or EC2 access)* |
+| M1 | Plugin loads in Claude Code; `/apsy:status` + assembly test pass | 0 — ✅ **met** (assembly green; 30 skills · 21 commands · 4 hooks shipped on `main`) |
 | M2 | FORMULATE produces a plan that passes G1 on a sample idea | 1 |
 | M3 | BUILD generates a static-trial experiment that passes `psynet test local` (G2) | 1 |
 | M4 | LLM-participant driver completes a pilot run; synthetic data exported (G3) | 1 |
