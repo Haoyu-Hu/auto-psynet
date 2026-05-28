@@ -18,8 +18,8 @@ Confirm the **essential packages** are installed and detectable (run `bin/apsy-d
 directly): `psynet` (CLI + importable) and `dallinger`, plus the Python stats stack
 (`pandas`/`scipy`/`statsmodels`). Record the psynet install location so recipe references resolve:
 `APSY_PSYNET_PATH=$(python3 -c 'import psynet, os; print(os.path.dirname(psynet.__file__))')`.
-If anything essential is missing, tell the user to install it (e.g. `pip install psynet`) and **do not
-continue with missing dependencies.** Only these essential packages are required — the plugin has no
+If anything essential is missing, **offer to dispatch `apsy:install`** to install it (with optional
+version pinning) — do not continue with missing dependencies. Only these essential packages are required — the plugin has no
 other runtime dependencies.
 
 ## STEP 3 — LLM-participant backend

@@ -9,8 +9,7 @@
         "setup",
         "configure",
         "initialize",
-        "first run",
-        "install apsy"
+        "first run"
       ]
     },
     "doctor": {
@@ -202,6 +201,19 @@
         "/apsy:run",
         "apsy run",
         "spec in"
+      ]
+    },
+    "install": {
+      "command": "install",
+      "priority": 8,
+      "keywords": [
+        "install psynet",
+        "install dallinger",
+        "install dependencies",
+        "install deps",
+        "pip install",
+        "install the plugin's deps",
+        "auto install"
       ]
     }
   },
