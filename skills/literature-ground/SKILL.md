@@ -6,8 +6,7 @@ description: "FORMULATE step — situate the idea in the literature: prior parad
 # apsy:literature-ground — situate the idea
 
 > EXECUTION CONTRACT. Produces §8 of `.apsy/research-plan.md`. **Cite real sources; never fabricate
-> citations.** (The dedicated `literature-scholar` persona arrives in Phase 3; until then apply the
-> methodologist lens.)
+> citations.** Apply the **`literature-scholar`** persona.
 
 ## STEP 1 — Build queries
 From §1–§3 (question + constructs), derive 3–6 queries spanning the construct, the paradigm family, and

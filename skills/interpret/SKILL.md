@@ -19,6 +19,10 @@ Report the **effect size + 95% CI + uncertainty** — not just a p-value.
 Run any preregistered robustness/sensitivity checks. **If the data is synthetic / LLM-pilot, label the
 findings as in-silico — never as human evidence** (`config/ethics-policy.md` §2.5).
 
+**Optional red-team pass:** dispatch the **`adversarial-reviewer`** to red-team the findings —
+analysis-matched-prereg? alternative explanations? CIs honest about the claims? synthetic-vs-human
+conflation? AI-disclosure present? Its severity-tiered findings inform the G6 verdict.
+
 ## STEP 4 — Verdict
 - **PASS** — analysis matched the prereg; result is interpretable. `bin/apsy-state.sh set
   gate_statuses.G6 pass`; write `.apsy/reports/G6-findings.md` (effect, CI, verdict, provenance).

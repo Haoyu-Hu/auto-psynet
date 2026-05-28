@@ -8,7 +8,7 @@ version: 0.0.1
 phase_defaults:
   formulate:        # → G1
     primary: methodologist
-    assist: [statistician]
+    assist: [statistician, literature-scholar]
   build:            # → G2
     primary: psynet-engineer
     assist: []
@@ -20,7 +20,7 @@ phase_defaults:
     assist: [data-analyst]
   publish:
     primary: science-writer
-    assist: [statistician]
+    assist: [statistician, literature-scholar]
 
 # Per-persona metadata. model: the ambient Claude model unless an external review provider is configured.
 # permissionMode: plan = read-only; acceptEdits = may write; default = standard.
@@ -45,7 +45,15 @@ agents:
     file: data-analyst.md
     phases: [pilot_deploy, analyze]
     permissionMode: default
+  literature-scholar:
+    file: literature-scholar.md
+    phases: [formulate, publish]
+    permissionMode: acceptEdits
+  adversarial-reviewer:                # opt-in independent red team; not in phase_defaults assists
+    file: adversarial-reviewer.md
+    phases: [formulate, analyze]       # invoked from plan-review (G1) and interpret (G6) when requested
+    permissionMode: plan
 
 # Personas planned for later phases (authored as the roadmap reaches them):
-#   literature-scholar, adversarial-reviewer, code-reviewer, debugger
-roadmap_personas: [literature-scholar, adversarial-reviewer]
+#   code-reviewer, debugger
+roadmap_personas: []

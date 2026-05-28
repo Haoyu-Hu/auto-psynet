@@ -17,6 +17,10 @@ Independence matters at a gate. Dispatch BOTH the **methodologist** and **statis
 `COMPLETE | BLOCKED | PARTIAL` + per-item findings + blind-spot hits. Do not self-approve without this
 independent pass.
 
+**Optional red-team pass:** for high-stakes plans (or when `autonomy_level=autonomous`), additionally
+dispatch the **`adversarial-reviewer`** as an independent red team. Its severity-tiered findings
+(🛑 critical / ⚠️ major / 🔵 minor) inform but do not decide the gate verdict.
+
 ## STEP 3 — Score
 For each G1 item, mark **pass / advisory / hard-fail**, then run the blind-spot checklist for missed
 pitfalls (confounds, demand characteristics, multiplicity, underpowered, p-hacking/HARKing, measurement
