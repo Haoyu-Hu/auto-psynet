@@ -7,9 +7,11 @@ publication-ready paper. Experimental subjects can be **humans and/or LLM agents
 
 > **Start here:** run **`/apsy:setup`** — it picks the Python interpreter (optionally creates a
 > managed venv at `~/.auto-psynet/venv`), runs the dependency + version check (`bin/apsy-check.sh`),
-> offers `/apsy:install` if `psynet`/`dallinger`/the stats stack are missing, then configures the
-> LLM-participant backend, username, AWS region, base domain, and consent default. A SessionStart
-> hook nudges you to setup on first run; all other `/apsy:*` commands assume setup is complete.
+> offers `/apsy:install` if `psynet`/`dallinger`/the stats stack are missing, asks for a **project
+> directory** where new experiments will live (`/apsy:project-dir` later changes it), then configures
+> the LLM-participant backend, username, AWS region, base domain, and consent default. A
+> SessionStart hook nudges you to setup on first run; all other `/apsy:*` commands assume setup is
+> complete.
 
 > **Status: Phase 0 (foundations).** The plugin skeleton, manifest, operating policy, command surface,
 > the deterministic engine, the LLM-participant driver, the 5-stage pipeline state machine, the PsyNet
@@ -35,10 +37,11 @@ level — real human deploy always requires explicit human approval + IRB attest
 
 | Command | Purpose |
 |---------|---------|
-| `/apsy:setup` | First-run config — LLM-participant backend (OpenAI/OpenRouter or ambient Claude), username/server prefix, AWS creds, base domain, consent default. |
-| `/apsy:install` | Auto-install the essential deps (`psynet` + `dallinger` + optional Python stats stack) with optional version pinning. |
-| `/apsy:update` | Upgrade PsyNet / Dallinger to a specified or the latest version in the active Python env. |
-| `/apsy:doctor` | Environment diagnostics — essential deps, Docker/Postgres/Redis, LLM keys, AWS, config. |
+| `/apsy:setup` | First-run config — Python interpreter / managed venv, project directory, LLM-participant backend, username/server prefix, AWS, base domain, consent default. |
+| `/apsy:install` | Auto-install essential deps (`psynet` + `dallinger` + optional stats stack); offers managed venv at `~/.auto-psynet/venv`. |
+| `/apsy:update` | Upgrade PsyNet / Dallinger; reuses the install engine via `--upgrade`. |
+| `/apsy:project-dir` | Set or inspect `APSY_PROJECT_DIR` — the consistent root where new experiments are scaffolded. Optionally symlinks `~/psynet-data` into the project tree. |
+| `/apsy:doctor` | Environment diagnostics — interpreter, essential deps, Redis + Postgres reachability, LLM keys, AWS, project-dir, config. |
 | `/apsy:status` | Where the current experiment stands (reads `<experiment>/.apsy/state.json`) + the next action. |
 
 ### Pipeline (one command per stage)
@@ -82,10 +85,85 @@ level — real human deploy always requires explicit human approval + IRB attest
 /plugin install apsy@auto-psynet
 
 # inside Claude Code:
-/apsy:setup        # first-run config (LLM backend, username, AWS, base domain)
-/apsy:install      # install psynet + dallinger (offers a managed venv on first run)
-/apsy:doctor       # verify the runtime
+/apsy:setup           # first-run config (interpreter, project-dir, LLM backend, AWS, ...)
+/apsy:install         # install psynet + dallinger (offers a managed venv on first run)
+/apsy:project-dir     # set APSY_PROJECT_DIR — the consistent root for new experiments
+/apsy:doctor          # verify the runtime (interpreter, deps, Redis, Postgres, project-dir)
 ```
+
+### Project organization (`APSY_PROJECT_DIR`)
+
+By default, `/apsy:idea` scaffolds new experiments in the current working directory — fine for
+one-off work, inconsistent across sessions. Setting `APSY_PROJECT_DIR` once (via `/apsy:setup` or
+later via `/apsy:project-dir`) gives every new study a home under the same root:
+
+```
+~/research/apsy-experiments/                ← $APSY_PROJECT_DIR
+├── pleasantness-rating/                    ← created by /apsy:idea
+│   ├── experiment.py  config.txt  requirements.txt  constraints.txt
+│   ├── .gitignore                          ← auto-created by bin/apsy-debug.sh
+│   └── .apsy/                              ← per-experiment state + reports + paper draft
+├── color-gsp/
+└── data/                                   ← (optional) symlinked from ~/psynet-data
+    ├── export/<study>__mode=debug__.../    ← from `bash bin/apsy-export.sh`
+    ├── assets/  launch-data/  artifacts/   ← PsyNet's other hardcoded dirs
+```
+
+The data redirect is two-pronged: `bin/apsy-export.sh` auto-adds `--path
+$APSY_PROJECT_DIR/data/<study>` to `psynet export local`; the optional `~/psynet-data` symlink
+(offered by `/apsy:project-dir`) redirects PsyNet's hardcoded `assets`/`launch-data`/`artifacts`
+paths transparently.
+
+### Running an experiment locally (`psynet debug local`)
+
+`bin/apsy-debug.sh local` is a one-command wrapper around `psynet debug local` that handles the 8
+pre-launch requirements automatically:
+
+```bash
+cd ~/research/apsy-experiments/pleasantness-rating
+bash bin/apsy-debug.sh local
+# Auto-fixes (silent): .gitignore, git init, constraints.txt via `psynet generate-constraints`
+# Hard checks (block): Redis reachable, Postgres reachable
+# Soft checks (warn):  recruiter="generic" + dashboard_password in experiment.py
+# Lifecycle reminder:  Ctrl+C is the only stop; export BEFORE killing
+# Then: psynet debug local
+```
+
+**Runtime services** (Redis at `localhost:6379` + PostgreSQL at `localhost:5432` with a `dallinger`
+user + db) are required — install priority:
+
+```
+1. System: apt install redis-server postgresql (Ubuntu)  ·  brew install redis postgresql@14 (macOS)
+2. conda-forge: conda install -c conda-forge redis-server postgresql (no-root fallback)
+3. Source compile (last resort)
+```
+
+> `pip`/`uv` cannot install Redis or PostgreSQL — they're server binaries, not Python packages.
+> The default `psynet debug local` path does NOT need Docker.
+
+### Export-before-kill workflow
+
+PsyNet experiments have **no in-experiment stop signal** — `psynet debug local` runs indefinitely.
+The only way to stop it is `Ctrl+C` in the terminal that started it. Before killing:
+
+```bash
+# In a SEPARATE shell, while the debug server is up:
+bash bin/apsy-export.sh
+# → If APSY_PROJECT_DIR is set, redirects to <project-dir>/data/<study>/
+# → Otherwise falls through to psynet's default ~/psynet-data/export/<study>__.../
+# Verify the export contents (anonymous/data/*.csv + source_code.zip + database.zip).
+# THEN come back to the debug shell and Ctrl+C.
+```
+
+### Hot-reload behavior (verified)
+
+werkzeug's stat reloader fires on **every** file change, but dallinger's worker subprocesses don't
+auto-re-import. So edits that change **class structure** may look reloaded yet leave workers stale.
+
+| Edit category | Verdict |
+|---|---|
+| Comments / strings / `bot_response` / `time_estimate` values | werkzeug reload sufficient |
+| `Exp` class config / `TrialMaker` / module-level imports | **restart** `bin/apsy-debug.sh local` |
 
 ### Python interpreter / virtualenv
 
@@ -121,12 +199,13 @@ Python and is **off by default** (`APSY_MCP_ENABLED=true` to enable).
 
 ```
 .claude-plugin/   plugin + marketplace manifests (name locked to "apsy")
-commands/         slash commands (21)
-skills/           SKILL.md execution contracts (30) — incl. skills/psynet/ knowledge hub
+commands/         slash commands (22)
+skills/           SKILL.md execution contracts (32) — incl. skills/psynet/ knowledge hub
 agents/           expert personas + routing (config.yaml) — 9 personas
 hooks/            SessionStart + PreToolUse lifecycle hooks (first-run nudge, lint, G4 spend gate)
-bin/              the deterministic engine (psynet / analysis / LLM-participant wrappers, dep checks)
-config/           ethics-policy, gates, pipeline, affinity, domain priors, templates
+bin/              the deterministic engine (22 helpers — incl. apsy-debug.sh + apsy-export.sh
+                  wrappers, apsy_resolve_python interpreter resolver, apsy-check.sh deps/versions)
+config/           ethics-policy, gates G1-G7, pipeline, affinity, blind-spots, templates
 mcp-server/       optional stdlib MCP server (off by default)
 tests/            assembly + behavior tests
 project-plan/     the full design (read this first)

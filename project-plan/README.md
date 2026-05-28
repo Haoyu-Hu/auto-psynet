@@ -4,12 +4,16 @@
 > through a verified research plan → a working PsyNet experiment → LLM-piloted and human deployment →
 > data analysis and iteration → a publication-ready scientific paper.
 
-**Plugin call name:** `apsy` (`/apsy:*`) · **Repo:** `auto-psynet` · **Status:** Phase 0 foundations
-shipped (manifest, engine, 30 skills · 21 commands · 9 personas · 4 hooks · 1 optional MCP server;
-assembly green on `main`). The interpreter resolver + managed venv (`/apsy:install --create-venv`),
-the dep + version check (`bin/apsy-check.sh`), and the SessionStart `first-run-nudge` that ties
-`/apsy:setup` as the entry point all landed alongside the Phase 0 foundations. Phase 1 (core loop on
-synthetic data) is the active build target; see [`05-roadmap.md`](05-roadmap.md).
+**Plugin call name:** `apsy` (`/apsy:*`) · **Repo:** `auto-psynet` · **Status:** Phases 0-3 + 5
+shipped (32 skills · 22 commands · 9 personas · 4 hooks · 1 optional MCP server; assembly green on
+`main`). The plugin's full BUILD-to-RUN-to-EXPORT-to-PUBLISH path is end-to-end on a properly
+set-up box: `/apsy:setup` → `/apsy:install` (managed venv) → `/apsy:project-dir` (one root for all
+experiments) → `/apsy:idea` (FORMULATE+G1) → `/apsy:build` (BUILD+G2) → `bin/apsy-debug.sh local`
+(auto-fixes .gitignore/git/constraints + checks services + launches `psynet debug local`) →
+`bin/apsy-export.sh` (redirects to `$APSY_PROJECT_DIR/data/<study>` via `--path`) → `/apsy:analyze`
++ `/apsy:paper` (G6+OSF package). Phase 4 (real human studies) remains infra-blocked on
+AWS+domain; everything else is exercised on synthetic data + verified via direct psynet 13.2 /
+dallinger 12.2 runs (2026-05-28).
 
 This directory is the **living plan** for the plugin — the design intent and the rationale, kept in
 sync with what's actually shipped. Read the documents in order.

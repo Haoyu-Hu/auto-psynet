@@ -75,17 +75,23 @@ auto-psynet/                          # the plugin repo (this repo)
 │   ├── first-run-nudge.sh            # SessionStart: nudge /apsy:setup when ~/.auto-psynet/config absent
 │   ├── psynet-lint.sh                # PreToolUse Edit|Write: inject PsyNet code-gen gotchas
 │   └── spend-gate.sh                 # PreToolUse Bash: HARD G4 block on real deploy/recruit
-├── bin/                              # the deterministic engine (apsy-*.{sh,py} wrappers)
+├── bin/                              # the deterministic engine (apsy-*.{sh,py} wrappers) — 22 helpers
 │   ├── apsy-common.sh                #   shared: config I/O + apsy_resolve_python (interpreter resolver)
 │   ├── apsy-config.sh                #   user-level config get/set (~/.auto-psynet/config)
 │   ├── apsy-install.sh apsy-update*  #   pip install/upgrade + managed venv (--create-venv)
 │   ├── apsy-check.sh                 #   focused dep + version check (deps, PyPI latest, drift)
 │   ├── apsy-doctor.sh apsy-state.sh  #   diagnostics + per-experiment state
-│   ├── apsy-debug.sh apsy-deploy.sh  #   debug-target selector + deploy adapter (local/llm-pilot/ec2)
+│   ├── apsy-debug.sh                 #   pre-launch auto-fix (.gitignore/git init/constraints.txt) +
+│   │                                 #   Redis+Postgres reachability checks + soft-checks (recruiter/
+│   │                                 #   dashboard_password) + lifecycle reminder → psynet debug local
+│   ├── apsy-export.sh                #   wrapper for `psynet export local`; auto-adds
+│   │                                 #   `--path $APSY_PROJECT_DIR/data/<study>` for redirect
+│   ├── apsy-deploy.sh                #   deploy adapter (local/llm-pilot/ec2) — G4-gated
 │   ├── apsy-recruit.sh               #   recruitment status (Prolific/Lucid/MTurk thin)
 │   ├── apsy-route.py apsy-run.py     #   smart router + autonomous pipeline state machine
 │   ├── apsy-power.py apsy-data-quality.py   #   stats helpers (effect sizes, exclusions)
-│   ├── apsy-repro.sh                 #   OSF-ready repro package assembler
+│   ├── apsy-repro.sh                 #   OSF-ready repro package assembler (code + paper + gates)
+│   ├── apsy-pilot.sh                 #   LLM-participant pilot driver
 │   └── apsy-add-recipe.py            #   extend the PsyNet knowledge pack (auto-index parent SKILL.md)
 ├── config/
 │   ├── pipeline.yaml                 # the 5-stage workflow-as-code (agents, gates, thresholds)
@@ -265,6 +271,29 @@ anything else.
   by setting `APSY_PYTHON` to their interpreter path. `bin/apsy-check.sh` is the single source of
   truth for "are the essential deps present + current?" and is consumed by both `/apsy:setup` STEP 2
   and `/apsy:doctor`.
+- **Native services for local debug (verified 2026-05-28):** `psynet debug local` (the default
+  `_debug_auto_reload` path) requires **Redis at `localhost:6379`** (used by `_pre_launch` in ALL 3
+  debug paths) + **PostgreSQL at `localhost:5432`** with a `dallinger` superuser + `dallinger`
+  database. Install priority: system (`apt install redis-server postgresql` /
+  `brew install redis postgresql@14`) → conda-forge (no-root fallback) → source compile. `pip`/`uv`
+  **cannot** install these (server binaries, not Python packages). `bin/apsy-doctor.sh` reports
+  them as ❌ HARD when missing.
+- **Project directory (`APSY_PROJECT_DIR`):** the consistent root where new experiments are
+  scaffolded. Set via `/apsy:setup` (STEP 4) or `/apsy:project-dir` later. Default if unset = cwd
+  (legacy). Two-pronged redirect of PsyNet's hardcoded `~/psynet-data/...` paths into the project
+  tree: `bin/apsy-export.sh` auto-adds `--path $APSY_PROJECT_DIR/data/<study>` to `psynet export
+  local` (per-call); `/apsy:project-dir` STEP 5 optionally symlinks `~/psynet-data` →
+  `$APSY_PROJECT_DIR/data` to redirect `assets`/`launch-data`/`artifacts` transparently.
+- **`psynet debug local` pre-launch fixups** (auto-handled by `bin/apsy-debug.sh local`):
+  `.gitignore` (psynet rejects directories without one) · `git init` + initial commit (psynet does
+  git introspection) · `constraints.txt` (via `psynet generate-constraints` from
+  requirements.txt) · PATH hygiene (venv's `bin/` first so `flask`/`gunicorn` resolve to the right
+  interpreter; otherwise `ModuleNotFoundError: gevent`).
+- **Hot-reload behavior (verified):** werkzeug's stat reloader fires on every file change, but
+  dallinger's worker subprocesses don't auto-re-import. Edits to `Exp` class config / `TrialMaker`
+  subclasses / module-level imports → **restart** `bin/apsy-debug.sh local` (workers stay stale
+  otherwise). Edits to method bodies / literal strings / comments / `bot_response` lambdas /
+  `time_estimate` values usually hot-reload cleanly.
 
 ## 3.10 Autonomy & safety model
 
