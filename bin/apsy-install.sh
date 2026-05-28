@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
-# apsy-install — install/pin the essential dependencies (PsyNet + Dallinger; optionally the Python
-# stats stack). Detects the active Python (venv vs system), prefers --user when site-packages aren't
-# writable, never silently passes --break-system-packages. On success, records APSY_PSYNET_VERSION,
-# APSY_DALLINGER_VERSION, and APSY_PSYNET_PATH into ~/.auto-psynet/config.
+# apsy-install — install/pin/upgrade the essential dependencies (PsyNet + Dallinger; optionally the
+# Python stats stack). Detects the active Python (venv vs system), prefers --user when site-packages
+# aren't writable, never silently passes --break-system-packages. On success, records
+# APSY_PSYNET_VERSION, APSY_DALLINGER_VERSION, and APSY_PSYNET_PATH into ~/.auto-psynet/config.
 #
 # Usage:
-#   apsy-install.sh [--psynet VER|latest] [--dallinger VER|latest] [--stats] [--dry-run]
+#   apsy-install.sh [--psynet VER|latest] [--dallinger VER|latest] [--stats] [--dry-run] [--upgrade]
 #                   [--user | --no-user] [--break-system-packages]
+#
+# When --upgrade is passed, pip runs with --upgrade (used by /apsy:update). Pre-install versions are
+# captured and reported as "old → new" after the install completes.
 set -uo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$DIR/apsy-common.sh"
 
-psynet_ver=""; dallinger_ver=""; install_stats=0; dry_run=0
+psynet_ver=""; dallinger_ver=""; install_stats=0; dry_run=0; upgrade=0
 user_flag_explicit=""        # "", "--user", or "--no-user"
 break_system=0
 
@@ -21,18 +24,20 @@ while [[ $# -gt 0 ]]; do
     --dallinger)            shift; dallinger_ver="${1:-}"; [[ -z "${1:-}" ]] && { echo "--dallinger needs a value"; exit 2; } ;;
     --stats)                install_stats=1 ;;
     --dry-run)              dry_run=1 ;;
+    --upgrade)              upgrade=1 ;;
     --user)                 user_flag_explicit="--user" ;;
     --no-user)              user_flag_explicit="--no-user" ;;
     --break-system-packages) break_system=1 ;;
     --help|-h)
       cat <<'USAGE'
-apsy-install — install/pin PsyNet + Dallinger (and the Python stats stack).
+apsy-install — install/pin/upgrade PsyNet + Dallinger (and the Python stats stack).
 
 Usage: apsy-install.sh [options]
   --psynet VER|latest         pin PsyNet version (default: latest)
   --dallinger VER|latest      pin Dallinger version (default: latest)
   --stats                     also install pandas/scipy/statsmodels if missing
   --dry-run                   resolve via 'pip install --dry-run'; do not install
+  --upgrade                   pass pip's --upgrade flag (used by /apsy:update)
   --user | --no-user          force --user / no --user (default: auto-detect)
   --break-system-packages     pass pip's PEP-668 escape (only with explicit consent)
 USAGE
@@ -70,13 +75,19 @@ if [[ -n "$psynet_ver" && "$psynet_ver" != "latest" ]]; then specs+=("psynet==$p
 if [[ -n "$dallinger_ver" && "$dallinger_ver" != "latest" ]]; then specs+=("dallinger==$dallinger_ver"); else specs+=("dallinger"); fi
 [[ "$install_stats" -eq 1 ]] && specs+=("pandas" "scipy" "statsmodels")
 
+# Capture pre-install versions so we can report "old → new" after an upgrade.
+psv_old="$("$PY" -c 'import psynet; print(getattr(psynet, "__version__", "unknown"))' 2>/dev/null || echo "(not installed)")"
+dlv_old="$("$PY" -c 'import dallinger; print(getattr(dallinger, "__version__", "unknown"))' 2>/dev/null || echo "(not installed)")"
+
 # Build the pip command as an array (handles empty optional flags safely under set -u).
 cmd=("$PY" -m pip install)
+[[ "$upgrade" -eq 1 ]] && cmd+=("--upgrade")
 [[ -n "$user_flag" ]] && cmd+=("$user_flag")
 [[ "$break_system" -eq 1 ]] && cmd+=("--break-system-packages")
 
 echo "[apsy-install] python: $PY"
 [[ -n "${VIRTUAL_ENV:-}" ]] && echo "[apsy-install] venv:   $VIRTUAL_ENV"
+echo "[apsy-install] before: psynet=$psv_old   dallinger=$dlv_old"
 echo "[apsy-install] plan:   ${cmd[*]} ${specs[*]}"
 
 # --- Execute ---------------------------------------------------------------
@@ -110,9 +121,15 @@ bash "$DIR/apsy-config.sh" set APSY_DALLINGER_VERSION "$dlv" >/dev/null
 [[ -n "$psp" ]] && bash "$DIR/apsy-config.sh" set APSY_PSYNET_PATH "$psp" >/dev/null
 
 echo
-echo "✅ installed:"
-echo "   psynet    $psv"
-echo "   dallinger $dlv"
+if [[ "$upgrade" -eq 1 ]]; then
+  echo "✅ upgraded:"
+  echo "   psynet     $psv_old → $psv"
+  echo "   dallinger  $dlv_old → $dlv"
+else
+  echo "✅ installed:"
+  echo "   psynet    $psv"
+  echo "   dallinger $dlv"
+fi
 [[ -n "$psp" ]] && echo "   psynet path: $psp"
 echo "   versions + path recorded in $HOME/.auto-psynet/config"
 echo "   next: run /apsy:doctor to verify the full runtime (Docker/Postgres/Redis, LLM key, AWS, etc.)"

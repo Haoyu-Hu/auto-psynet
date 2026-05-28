@@ -215,6 +215,23 @@
         "install the plugin's deps",
         "auto install"
       ]
+    },
+    "update": {
+      "command": "update",
+      "priority": 8,
+      "keywords": [
+        "update psynet",
+        "update dallinger",
+        "upgrade psynet",
+        "upgrade dallinger",
+        "bump psynet",
+        "bump dallinger",
+        "upgrade deps",
+        "update dependencies",
+        "pip upgrade",
+        "latest psynet",
+        "newer version"
+      ]
     }
   },
   "stage_next_action": {
