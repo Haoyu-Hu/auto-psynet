@@ -95,12 +95,17 @@ GI
         echo "[apsy-debug] ✅ redis reachable on ${REDIS_HOST:-localhost}:${REDIS_PORT:-6379}"
       else
         echo "[apsy-debug] ❌ Redis is NOT reachable (psynet _pre_launch calls redis on all 3 debug paths)"
-        echo "                start it: redis-server --daemonize yes  (install via conda-forge if missing)"
+        echo "                start it: redis-server --daemonize yes"
         miss=1
       fi
     else
       echo "[apsy-debug] ❌ redis-cli not found — Redis is REQUIRED for \`psynet debug local\`"
-      echo "                install:  conda install -c conda-forge redis-server  (or apt-get on Debian)"
+      echo "                install (in priority order):"
+      echo "                  • Debian/Ubuntu:  sudo apt install redis-server"
+      echo "                  • macOS:          brew install redis"
+      echo "                  • RHEL/Fedora:    sudo dnf install redis"
+      echo "                  • no-root/HPC:    conda install -c conda-forge redis-server  (fallback)"
+      echo "                (pip/uv can't install Redis — it's not a Python package)"
       miss=1
     fi
     if command -v pg_isready >/dev/null 2>&1; then
@@ -113,7 +118,12 @@ GI
       fi
     else
       echo "[apsy-debug] ❌ pg_isready not found — PostgreSQL is REQUIRED for \`psynet debug local\`"
-      echo "                install:  conda install -c conda-forge postgresql"
+      echo "                install (in priority order):"
+      echo "                  • Debian/Ubuntu:  sudo apt install postgresql"
+      echo "                  • macOS:          brew install postgresql@14"
+      echo "                  • RHEL/Fedora:    sudo dnf install postgresql-server"
+      echo "                  • no-root/HPC:    conda install -c conda-forge postgresql  (fallback)"
+      echo "                (pip/uv can't install Postgres — it's not a Python package)"
       miss=1
     fi
     if [[ "$miss" -eq 1 ]]; then

@@ -40,8 +40,8 @@ echo "== PsyNet runtime (Postgres + Redis required; Docker optional) =="
 # Postgres + Redis are REQUIRED by `psynet debug local` even without Docker — psynet's _pre_launch
 # calls redis_vars.clear() on the default Redis port before any of the debug paths branch, and the
 # develop-mode server uses Postgres for the experiment DB. Verified 2026-05-28 against psynet 13.2.
-have redis-cli && { redis-cli ping >/dev/null 2>&1 && ok "redis reachable on localhost:6379 (required for debug local)" || bad "redis-cli installed but Redis is DOWN (required for `psynet debug local` — start redis-server)"; } || bad "redis-cli not found — Redis is REQUIRED for `psynet debug local` (install via conda: \`conda install -c conda-forge redis-server\`)"
-have pg_isready && { pg_isready >/dev/null 2>&1 && ok "postgres reachable on localhost:5432 (required for debug local; also need dallinger user + dallinger db)" || bad "pg_isready installed but Postgres is DOWN — start postgres + create the dallinger user/db"; } || bad "pg_isready not found — PostgreSQL is REQUIRED for \`psynet debug local\` (install via conda: \`conda install -c conda-forge postgresql\`)"
+have redis-cli && { redis-cli ping >/dev/null 2>&1 && ok "redis reachable on localhost:6379 (required for debug local)" || bad "redis-cli installed but Redis is DOWN — start redis-server"; } || bad "redis-cli not found — Redis is REQUIRED for psynet debug local. Install: apt install redis-server (Ubuntu) · brew install redis (macOS) · conda -c conda-forge redis-server (HPC fallback). pip/uv can't install it — not a Python pkg."
+have pg_isready && { pg_isready >/dev/null 2>&1 && ok "postgres reachable on localhost:5432 (required for debug local; also need dallinger user + dallinger db)" || bad "pg_isready installed but Postgres is DOWN — start postgres + create the dallinger user/db"; } || bad "pg_isready not found — PostgreSQL is REQUIRED for psynet debug local. Install: apt install postgresql (Ubuntu) · brew install postgresql@14 (macOS) · conda -c conda-forge postgresql (HPC fallback). pip/uv can't install it."
 if have docker; then
   if docker info >/dev/null 2>&1; then ok "docker daemon reachable (optional; the --docker debug path uses it)"; else warn "docker installed but daemon unreachable (optional — debug local default path doesn't need it)"; fi
 else warn "docker not installed (optional — only needed for --docker debug or real deploy via Dallinger)"; fi
@@ -55,3 +55,14 @@ else warn "aws CLI not installed (needed for the ec2 backend)"; fi
 echo "== Config / identity =="
 [[ -f "$APSY_CONFIG_FILE" ]] && ok "config: $APSY_CONFIG_FILE" || warn "no config — run /apsy:setup"
 [[ -n "${APSY_USERNAME:-}" ]] && ok "username (server prefix): ${APSY_USERNAME}" || warn "no username set — run /apsy:setup"
+if [[ -n "${APSY_PROJECT_DIR:-}" ]]; then
+  if [[ -d "$APSY_PROJECT_DIR" && -w "$APSY_PROJECT_DIR" ]]; then
+    ok "project dir: ${APSY_PROJECT_DIR} (exists, writable; new experiments scaffold here)"
+  elif [[ -d "$APSY_PROJECT_DIR" ]]; then
+    bad "project dir: ${APSY_PROJECT_DIR} exists but NOT writable — fix permissions or pick another via /apsy:project-dir"
+  else
+    warn "project dir: ${APSY_PROJECT_DIR} configured but doesn't exist — run /apsy:project-dir to create"
+  fi
+else
+  warn "no project dir set — /apsy:idea will scaffold into cwd. Set via /apsy:project-dir for consistency"
+fi

@@ -10,6 +10,13 @@ Orchestrate the FORMULATE stage for the idea in `$ARGUMENTS` (ask for it if empt
 order — each writes its section of `.apsy/research-plan.md` — and honor the autonomy level in
 `.apsy/state.json` (default **supervised** = pause for the user at the G1 gate).
 
+0. **Resolve experiment directory.** Pick a short kebab-case `study-slug` from the idea (e.g.
+   "do nature scenes rate higher than urban?" → `nature-urban-pleasantness`). Read
+   `APSY_PROJECT_DIR` from `~/.auto-psynet/config` (via `bin/apsy-config.sh get APSY_PROJECT_DIR`).
+   - **If set:** the experiment lives at `$APSY_PROJECT_DIR/<study-slug>/`. Create + cd there.
+   - **If unset:** fall back to `<cwd>/<study-slug>/`. Tell the user `/apsy:project-dir` would
+     unify this across sessions. Create + cd there.
+   - **If `cwd` is already an experiment dir** (`.apsy/state.json` exists), keep using it.
 1. **`apsy:formulate`** — scaffold `.apsy/`, capture the idea, write §1–§3 (question, hypotheses,
    variables; name the archetype + domain).
 2. **`apsy:literature-ground`** — situate in the literature; write §8; record an expected effect size.

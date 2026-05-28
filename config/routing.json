@@ -251,6 +251,22 @@
         "teach psynet",
         "add-recipe"
       ]
+    },
+    "project-dir": {
+      "command": "project-dir",
+      "priority": 7,
+      "keywords": [
+        "project dir",
+        "project directory",
+        "set project",
+        "set project dir",
+        "set project directory",
+        "where experiments",
+        "experiment home",
+        "project home",
+        "project-dir",
+        "apsy_project_dir"
+      ]
     }
   },
   "stage_next_action": {

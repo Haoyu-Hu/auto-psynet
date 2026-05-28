@@ -14,13 +14,32 @@
 **Infra needs depend on the path.** Real deploy needs Docker + Postgres + Redis + worker/clock + a
 public web endpoint. **Local debug WITHOUT Docker needs (verified by direct test 2026-05-28):**
 - **Native Redis** at `localhost:6379` — used by `_pre_launch` in ALL three paths (auto-reload,
-  legacy, docker). On HPC without root, install via conda: `conda install -c conda-forge
-  redis-server` then `redis-server --daemonize yes`.
+  legacy, docker).
 - **Native PostgreSQL** at `localhost:5432` with a `dallinger` superuser + `dallinger` database.
-  Conda path: `conda install -c conda-forge postgresql` then
-  `initdb -D <data> --auth=trust && pg_ctl -D <data> start && psql -c "CREATE USER dallinger
-  SUPERUSER; CREATE DATABASE dallinger OWNER dallinger"`.
 - **DATABASE_URL** + **REDIS_URL** env vars (defaults usually fine if services are on local default ports).
+
+**Install priority for Redis + PostgreSQL** (`pip`/`uv` are NOT options — these are server binaries,
+not Python packages):
+1. **System package manager** — primary on most dev boxes (~1 min, lightest):
+   - Debian/Ubuntu: `sudo apt install redis-server postgresql`
+   - macOS: `brew install redis postgresql@14`
+   - RHEL/Fedora: `sudo dnf install redis postgresql-server`
+2. **conda-forge** — fallback when no root (HPC, locked-down machines): `conda install -c
+   conda-forge redis-server postgresql`. Heavier than apt/brew (the conda env adds ~hundreds of
+   MB) but works without root.
+3. **Build from source** — last resort. Redis source builds in ~30s on a small box; Postgres takes
+   minutes and is rarely worth it.
+
+**Service bootstrap** (works regardless of how you got the binaries):
+```bash
+# Redis (no config needed for local debug)
+redis-server --daemonize yes
+
+# PostgreSQL — initdb a data dir, start, create the dallinger user + db
+initdb -D ~/apsy-pg --auth=trust
+pg_ctl -D ~/apsy-pg -l ~/apsy-pg.log start
+psql -U postgres -c "CREATE USER dallinger SUPERUSER; CREATE DATABASE dallinger OWNER dallinger"
+```
 
 **Experiment-directory pre-launch requirements** (psynet's `_pre_launch` calls `run_pre_checks`):
 - `experiment.py` + `config.txt` + `requirements.txt` present.
@@ -82,14 +101,17 @@ are NOT optional; the **`ec2`** backend (Dallinger provisioning) is for cloud te
 deploy; real `deploy`/recruit is gated by **G4** (`config/ethics-policy.md`); **never** trust the
 experiment to stop on its own — Ctrl+C is the only way out.
 
-**Verified-in-practice debug sequence on a fresh Linux box (2026-05-28; no Docker, no root):**
+**Verified-in-practice debug sequence (2026-05-28; no Docker required):**
 ```bash
-# (one time) native services via conda
-conda create -y -p ~/apsy-services -c conda-forge redis-server postgresql
-~/apsy-services/bin/redis-server --daemonize yes
-~/apsy-services/bin/initdb -D ~/apsy-pg --auth=trust
-~/apsy-services/bin/pg_ctl -D ~/apsy-pg -l ~/apsy-pg.log start
-~/apsy-services/bin/psql -c "CREATE USER dallinger SUPERUSER; CREATE DATABASE dallinger OWNER dallinger" postgres
+# (one time) native services — pick ONE of:
+#   apt:    sudo apt install redis-server postgresql
+#   brew:   brew install redis postgresql@14
+#   conda:  conda create -y -p ~/apsy-services -c conda-forge redis-server postgresql
+# Then start them (service paths shown for conda; system installs use systemctl or service):
+redis-server --daemonize yes
+initdb -D ~/apsy-pg --auth=trust
+pg_ctl -D ~/apsy-pg -l ~/apsy-pg.log start
+psql -U postgres -c "CREATE USER dallinger SUPERUSER; CREATE DATABASE dallinger OWNER dallinger"
 
 # (per experiment) pre-launch fixups
 psynet generate-constraints     # → constraints.txt

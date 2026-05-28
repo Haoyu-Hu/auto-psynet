@@ -47,16 +47,26 @@ Rationale: the orchestrator is always the ambient Claude; the *participant* mode
 keeping it distinct from the orchestrator is methodologically cleaner (see `config/ethics-policy.md` §2).
 **Do not proceed until a backend is chosen.**
 
-## STEP 4 — Identity & server naming
+## STEP 4 — Project directory
+Ask for the **project directory** — the root where future `/apsy:idea` runs will scaffold new
+experiments (so every study lands at `<APSY_PROJECT_DIR>/<study>/` for a uniform layout). Default
+recommendation: a dedicated dir under HOME or the user's work tree, e.g.
+`~/research/apsy-experiments` or `/work/<lab>/<user>/apsy-experiments`. Validate the path exists +
+is writable (create it if not); reject paths inside the plugin repo. Record `APSY_PROJECT_DIR`.
+**If the user has no preference, accept `$HOME/apsy-experiments` as the default.** (This setting
+can be changed any time via `/apsy:project-dir`.) Data exports stay at PsyNet's
+`~/psynet-data/export/` — see `apsy:project-dir` skill for symlinking that into the project tree.
+
+## STEP 5 — Identity & server naming
 Ask for the **username** used as the EC2 server-name prefix (`{username}.{study}.{host}`). Ask for the
 **base domain** the user controls (for EC2 DNS) and confirm the default AWS region `us-east-1`. Record
 `APSY_USERNAME`, `APSY_BASE_DOMAIN`, `APSY_AWS_REGION`. (Actual AWS-cred validity is checked by `doctor`.)
 
-## STEP 5 — Consent default
+## STEP 6 — Consent default
 Note that consent defaults to PsyNet `MainConsent`. Tell the user: *"You can set a custom consent form
 via `apsy:consent`."* Record `APSY_CONSENT=MainConsent` unless already customized.
 
-## STEP 6 — Persist & hand off
+## STEP 7 — Persist & hand off
 Write all `APSY_*` values (including `APSY_PSYNET_PATH`) to `~/.auto-psynet/config` via `bin/apsy-common.sh`. Summarize the resulting
 config (redacting any key values). Recommend the user run **`/apsy:doctor`** next to validate the runtime.
 **Validation gate:** confirm the config file exists and is non-empty before reporting success.
