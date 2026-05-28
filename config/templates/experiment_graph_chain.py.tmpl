@@ -79,11 +79,17 @@ recruiter_settings = get_prolific_settings()
 
 
 # --- Experiment -----------------------------------------------------------------------------------
+# Defaults below assume LOCAL DEBUG (`psynet debug local`):
+#   - recruiter "generic" (manual link) — `prolific` etc. require panel-specific config and will
+#     fail at /launch with HTTP 500. Switch via /apsy:prolific BEFORE deploy.
+#   - dashboard_password is REQUIRED for `psynet export local` (verified 2026-05-28).
 class Exp(psynet.experiment.Experiment):
     label = "{{LABEL}}"
 
     config = {
         "initial_recruitment_size": {{INITIAL_RECRUITMENT_SIZE}},
+        "dashboard_user": "{{DASHBOARD_USER}}",          # default "admin"
+        "dashboard_password": "{{DASHBOARD_PASSWORD}}",  # required for psynet export local
         **recruiter_settings,
     }
 
