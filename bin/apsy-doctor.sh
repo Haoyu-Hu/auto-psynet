@@ -29,11 +29,12 @@ elif [[ "${APSY_LLM_PROVIDER:-}" == "ambient" ]]; then ok "ambient Claude (subag
 else warn "no LLM-participant backend — run /apsy:setup (set a key or choose ambient Claude)"; fi
 
 echo "== Dependencies (essential) =="
-if have psynet; then ok "psynet CLI: $(psynet --version 2>/dev/null | head -1 || echo present)"; else bad "psynet not installed (run /apsy:install)"; fi
+# Delegate to apsy-check.sh as the single source of truth for the dep/version status.
+bash "$DIR/apsy-check.sh" | sed -n '/^dependencies:/,/^$/p' | sed '/^dependencies:/d;/^$/d'
+# Surface the psynet path on a separate line for the "recipes use this install" note.
 psynet_path="$("$PY_CHECK" -c 'import psynet, os; print(os.path.dirname(psynet.__file__))' 2>/dev/null || true)"
-[[ -n "$psynet_path" ]] && ok "psynet importable by apsy python: $psynet_path" || warn "psynet not importable by $PY_CHECK"
-"$PY_CHECK" -c "import dallinger" 2>/dev/null && ok "dallinger importable by apsy python" || warn "dallinger not importable by $PY_CHECK"
-"$PY_CHECK" -c "import pandas, scipy, statsmodels" 2>/dev/null && ok "python stats stack (pandas/scipy/statsmodels)" || warn "python stats stack incomplete (run /apsy:install --stats)"
+[[ -n "$psynet_path" ]] && ok "psynet path (recipes reference this): $psynet_path"
+have psynet && ok "psynet CLI on PATH ($(psynet --version 2>/dev/null | head -1 || echo present))"
 
 echo "== PsyNet runtime (Docker/Postgres/Redis) =="
 if have docker; then

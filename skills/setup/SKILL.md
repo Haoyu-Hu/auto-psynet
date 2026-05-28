@@ -14,14 +14,26 @@ already exists, show it and ask whether to reconfigure or edit a single field. *
 the config location is confirmed.**
 
 ## STEP 2 — Verify essential dependencies (and pick a Python)
-Run `bin/apsy-doctor.sh`; the first section reports the "apsy python" (the interpreter the engine
-resolves via `--python > $VIRTUAL_ENV > $APSY_PYTHON > python3 from PATH`) and whether `psynet` /
-`dallinger` / the stats stack (`pandas`/`scipy`/`statsmodels`) are importable by it. If `psynet` is
-missing, **offer to dispatch `apsy:install`** — that skill owns the venv/interpreter decision (it
-will offer to create a managed venv at `~/.auto-psynet/venv` and record `APSY_PYTHON`, or accept an
-opt-out interpreter path for conda/poetry/uv users). Do not continue with missing dependencies. On
-success, `apsy:install` records `APSY_PSYNET_PATH` so recipe references resolve. Only these essential
-packages are required — the plugin has no other runtime dependencies.
+Run `bin/apsy-check.sh --versions` — the focused dep + version check that reports:
+- **apsy python**: the interpreter resolved via `--python > $VIRTUAL_ENV > $APSY_PYTHON > python3 from PATH` + the source label,
+- **dependencies**: `psynet`, `dallinger`, and the stats stack (`pandas`/`scipy`/`statsmodels`) — installed versions if importable, ❌ if not,
+- **versions (PyPI)**: installed vs latest, when `--versions` is passed,
+- **summary**: one line — *"all essential dependencies present and current"* / *"N missing → /apsy:install"* / *"N outdated → /apsy:update"*.
+
+Then:
+- If `missing > 0` (psynet or dallinger or stats stack not installed): **offer to dispatch
+  `apsy:install`** via `AskUserQuestion`. That skill owns the venv/interpreter decision (it offers to
+  create a managed venv at `~/.auto-psynet/venv` and record `APSY_PYTHON`, or accepts an opt-out
+  interpreter path for conda/poetry/uv users via `--python PATH`). Do not continue past STEP 2 with
+  missing dependencies.
+- If `outdated > 0` (installed but PyPI has a newer version): **offer to dispatch `apsy:update`** via
+  `AskUserQuestion`. The user can decline (e.g. pinned env), and setup continues.
+- If `drifted > 0` (installed version doesn't match `APSY_PSYNET_VERSION` recorded in config — e.g.
+  the venv changed underneath us): note it and re-record by running `apsy:install` once or just
+  refresh `APSY_PSYNET_VERSION` from the importable module.
+
+On success, `apsy:install` records `APSY_PSYNET_PATH` so recipe references resolve. Only `psynet`,
+`dallinger`, and the stats stack are required — the plugin has no other runtime dependencies.
 
 ## STEP 3 — LLM-participant backend
 Detect `OPENAI_API_KEY` and `OPENROUTER_API_KEY` in the environment.

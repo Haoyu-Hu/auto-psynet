@@ -5,6 +5,12 @@ A Claude Code plugin that automates the lifecycle of online **behavioral experim
 working PsyNet experiment code → **LLM-pilot** and human deployment → analysis & iteration → a
 publication-ready paper. Experimental subjects can be **humans and/or LLM agents**.
 
+> **Start here:** run **`/apsy:setup`** — it picks the Python interpreter (optionally creates a
+> managed venv at `~/.auto-psynet/venv`), runs the dependency + version check (`bin/apsy-check.sh`),
+> offers `/apsy:install` if `psynet`/`dallinger`/the stats stack are missing, then configures the
+> LLM-participant backend, username, AWS region, base domain, and consent default. A SessionStart
+> hook nudges you to setup on first run; all other `/apsy:*` commands assume setup is complete.
+
 > **Status: Phase 0 (foundations).** The plugin skeleton, manifest, operating policy, command surface,
 > the deterministic engine, the LLM-participant driver, the 5-stage pipeline state machine, the PsyNet
 > knowledge pack (8 paradigm recipes + 8 cross-cutting), and the analysis stack are all in place.
@@ -118,14 +124,12 @@ Python and is **off by default** (`APSY_MCP_ENABLED=true` to enable).
 commands/         slash commands (21)
 skills/           SKILL.md execution contracts (30) — incl. skills/psynet/ knowledge hub
 agents/           expert personas + routing (config.yaml) — 9 personas
-hooks/            lifecycle + safety hooks
-bin/              the deterministic engine (psynet / analysis / LLM-participant wrappers)
+hooks/            SessionStart + PreToolUse lifecycle hooks (first-run nudge, lint, G4 spend gate)
+bin/              the deterministic engine (psynet / analysis / LLM-participant wrappers, dep checks)
 config/           ethics-policy, gates, pipeline, affinity, domain priors, templates
 mcp-server/       optional stdlib MCP server (off by default)
 tests/            assembly + behavior tests
 project-plan/     the full design (read this first)
-materials/        local reference clones (PsyNet, Dallinger) — dev-only, gitignored, not shipped
-experiment-examples/  real PsyNet experiments for dev reference — dev-only, gitignored, not shipped
 ```
 
 Built on [PsyNet](https://gitlab.com/PsyNetDev/PsyNet) / [Dallinger](https://github.com/Dallinger/Dallinger).
