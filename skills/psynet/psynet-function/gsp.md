@@ -29,4 +29,4 @@ a value conditioned on the rendered (described) stimulus.
 **Data shape:** per-node vectors across chain iterations → analyze the converging / stationary
 distribution. Export gives the Trial CSV + node tables carrying the vectors.
 
-**Status:** flagship — build right after the static MVP loop closes (roadmap Phase 2).
+**Status:** implemented — template `config/templates/experiment_gsp.py.tmpl` shipped (22 placeholders, all 8 gotchas respected incl. `start_nodes=` and `balance_across_chains`); validated end-to-end on synthetic chains (color-GSP demo, 2026-05-28: R̂<1.05 on all dims; chains converged to a warm-yellow region). Next: media-GSP (audio / image variants with `synth_function`).

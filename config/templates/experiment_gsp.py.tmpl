@@ -1,0 +1,108 @@
+# experiment.py — Auto-PsyNet (Gibbs Sampling with People / GSP). Generated from .apsy/research-plan.md.
+# Every {{ NAME }}-style placeholder below (no spaces in real placeholders; spaces in this comment so
+# this line is itself not a placeholder) is filled by apsy:scaffold + apsy:implement-paradigm. Respect
+# the PsyNet gotchas: time_estimate on every Page/Trial; unique Module/TrialMaker id_; bot_response on
+# every Control; **chains use start_nodes= (NOT nodes=)**; Markup() for HTML; consent first; remember
+# `balance_across_chains`. Worked references: psynet/trial/gibbs.py + media_gibbs.py; demos
+# demos/experiments/gibbs/ and gibbs_audio/ when present (locate via APSY_PSYNET_PATH).
+import random
+import psynet.experiment
+from markupsafe import Markup
+from psynet.consent import MainConsent
+from psynet.modular_page import ModularPage, SliderControl
+from psynet.page import InfoPage
+from psynet.timeline import Timeline
+from psynet.trial.gibbs import GibbsNode, GibbsTrial, GibbsTrialMaker
+
+
+# --- Node -----------------------------------------------------------------------------------------
+# vector_length is the dimensionality of the perceptual space being sampled; vector_ranges is a list
+# of (min, max) per dimension. For media variants, subclass a *GibbsNode and define synth_function +
+# granularity (see psynet/trial/media_gibbs.py).
+class {{NODE_CLASS}}(GibbsNode):
+    vector_length = {{VECTOR_LENGTH}}
+    vector_ranges = {{VECTOR_RANGES}}      # e.g. [(0, 255), (0, 255), (0, 255)] for RGB
+
+    def random_sample(self, i):
+        lo, hi = self.vector_ranges[i]
+        return random.uniform(lo, hi)
+
+
+# --- Trial ----------------------------------------------------------------------------------------
+# Each trial varies ONE dimension (self.active_index) of the current vector (self.vector). The slider
+# proposes a new value for that dimension; the resulting vector becomes the next node in the chain.
+class {{TRIAL_CLASS}}(GibbsTrial):
+    time_estimate = {{TRIAL_TIME}}        # seconds — REQUIRED
+
+    def show_trial(self, experiment, participant):
+        vec = list(self.vector)
+        i = self.active_index
+        lo, hi = {{NODE_CLASS}}.vector_ranges[i]
+        prompt_html = {{PROMPT_HTML_EXPR}}     # a Python f-string using `vec`, `i`, `lo`, `hi`
+        return ModularPage(
+            "gibbs_trial",
+            Markup(prompt_html),
+            SliderControl(
+                min_value=lo,
+                max_value=hi,
+                default_value=vec[i],
+                bot_response={{BOT_RESPONSE}},   # REQUIRED so bot tests pass; LLM-pilot driver overrides
+            ),
+            time_estimate=self.time_estimate,
+        )
+
+
+# --- TrialMaker -----------------------------------------------------------------------------------
+class {{TRIAL_MAKER_CLASS}}(GibbsTrialMaker):
+    pass
+
+
+# --- Start nodes (one per chain; chain_type="across" — chains shared across participants) ---------
+start_nodes = [{{NODE_CLASS}}() for _ in range({{N_CHAINS}})]
+
+
+# --- Recruitment ----------------------------------------------------------------------------------
+def get_prolific_settings():
+    return {
+        "recruiter": "{{RECRUITER}}",
+        "base_payment": {{BASE_PAYMENT}},
+        "prolific_estimated_completion_minutes": {{EST_MINUTES}},
+        "wage_per_hour": {{WAGE_PER_HOUR}},
+    }
+
+
+recruiter_settings = get_prolific_settings()
+
+
+# --- Experiment -----------------------------------------------------------------------------------
+class Exp(psynet.experiment.Experiment):
+    label = "{{LABEL}}"
+
+    config = {
+        "initial_recruitment_size": {{INITIAL_RECRUITMENT_SIZE}},
+        **recruiter_settings,
+    }
+
+    test_n_bots = {{N_BOTS}}
+
+    timeline = Timeline(
+        MainConsent(),
+        InfoPage(Markup("{{INSTRUCTIONS_HTML}}"), time_estimate=5),
+        {{TRIAL_MAKER_CLASS}}(
+            id_="{{TRIAL_MAKER_ID}}",
+            trial_class={{TRIAL_CLASS}},
+            node_class={{NODE_CLASS}},
+            start_nodes=start_nodes,           # NOT nodes= — Gibbs uses start_nodes (gotcha)
+            chain_type="{{CHAIN_TYPE}}",       # "across" (shared chains) or "within" (per-participant)
+            chains_per_experiment={{N_CHAINS}},
+            trials_per_node=1,
+            max_nodes_per_chain={{MAX_NODES_PER_CHAIN}},
+            recruit_mode="n_participants",
+            target_n_participants={{TARGET_N}},
+            balance_across_chains=True,        # spread participants across chains (gotcha)
+        ),
+        InfoPage(Markup("{{DEBRIEF_HTML}}"), time_estimate=3),
+    )
+
+    def test_check_bot(self, bot):
+        assert not bot.failed
