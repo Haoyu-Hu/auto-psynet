@@ -114,8 +114,8 @@ if [[ -n "$dallinger_ver" && "$dallinger_ver" != "latest" ]]; then specs+=("dall
 [[ "$install_stats" -eq 1 ]] && specs+=("pandas" "scipy" "statsmodels")
 
 # Capture pre-install versions so we can report "old → new" after an upgrade.
-psv_old="$("$PY" -c 'import psynet; print(getattr(psynet, "__version__", "unknown"))' 2>/dev/null || echo "(not installed)")"
-dlv_old="$("$PY" -c 'import dallinger; print(getattr(dallinger, "__version__", "unknown"))' 2>/dev/null || echo "(not installed)")"
+psv_old="$("$PY" -c 'import importlib.metadata as m; print(m.version("psynet"))' 2>/dev/null || echo "(not installed)")"
+dlv_old="$("$PY" -c 'import importlib.metadata as m; print(m.version("dallinger"))' 2>/dev/null || echo "(not installed)")"
 
 # Build the pip command as an array (handles empty optional flags safely under set -u).
 cmd=("$PY" -m pip install)
@@ -150,8 +150,8 @@ if [[ $rc -ne 0 ]]; then
 fi
 
 # --- Record versions + path -----------------------------------------------
-psv="$("$PY" -c 'import psynet; print(getattr(psynet, "__version__", "unknown"))' 2>/dev/null || echo unknown)"
-dlv="$("$PY" -c 'import dallinger; print(getattr(dallinger, "__version__", "unknown"))' 2>/dev/null || echo unknown)"
+psv="$("$PY" -c 'import importlib.metadata as m; print(m.version("psynet"))' 2>/dev/null || echo unknown)"
+dlv="$("$PY" -c 'import importlib.metadata as m; print(m.version("dallinger"))' 2>/dev/null || echo unknown)"
 psp="$("$PY" -c 'import psynet, os; print(os.path.dirname(psynet.__file__))' 2>/dev/null || true)"
 
 bash "$DIR/apsy-config.sh" set APSY_PSYNET_VERSION    "$psv" >/dev/null

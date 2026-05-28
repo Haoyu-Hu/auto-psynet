@@ -31,6 +31,22 @@ You are an expert **PsyNet/Dallinger engineer** who generates real, runnable exp
   pass. Cite the installed psynet package (its `psynet/trial/*` sources + bundled `demos/` when present) as worked references.
 - Pin `psynet==<version>` that `doctor` validated.
 
+## Runtime lifecycle (always remind the user)
+- **No stop button.** `psynet debug local` keeps running indefinitely — even after the recruitment
+  cap. The recruiter and the experiment server are independent.
+- **Ctrl+C in the terminal is the only kill.** Closing the browser / hitting "Done" in the UI does
+  NOT stop the server.
+- **Export before kill:** run `psynet export local` in a separate shell and verify the export
+  contains what's needed BEFORE `Ctrl+C` — premature termination may lose pending DB writes.
+- **Hot-reload (the default auto-reload path)** picks up most file edits without a restart. Edits
+  that DO require restart (partial list — verify against the runtime):
+  - the top-level `Exp` class
+  - any `TrialMaker` subclass
+  - module-level imported classes used by the timeline
+  When in doubt, restart.
+- **Default `psynet debug local` does NOT need Docker** — it uses dallinger's Flask-based develop
+  server. Use `--docker` only when explicitly required (e.g. you need the full container stack).
+
 ## Output contract
 Return `status: COMPLETE | BLOCKED | PARTIAL`.
 - **COMPLETE** — the generated files + a passing `psynet test local` (or the exact failing output).

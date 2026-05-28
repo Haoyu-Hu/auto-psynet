@@ -36,12 +36,15 @@ psynet_path="$("$PY_CHECK" -c 'import psynet, os; print(os.path.dirname(psynet._
 [[ -n "$psynet_path" ]] && ok "psynet path (recipes reference this): $psynet_path"
 have psynet && ok "psynet CLI on PATH ($(psynet --version 2>/dev/null | head -1 || echo present))"
 
-echo "== PsyNet runtime (Docker/Postgres/Redis) =="
+echo "== PsyNet runtime (Postgres + Redis required; Docker optional) =="
+# Postgres + Redis are REQUIRED by `psynet debug local` even without Docker — psynet's _pre_launch
+# calls redis_vars.clear() on the default Redis port before any of the debug paths branch, and the
+# develop-mode server uses Postgres for the experiment DB. Verified 2026-05-28 against psynet 13.2.
+have redis-cli && { redis-cli ping >/dev/null 2>&1 && ok "redis reachable on localhost:6379 (required for debug local)" || bad "redis-cli installed but Redis is DOWN (required for `psynet debug local` — start redis-server)"; } || bad "redis-cli not found — Redis is REQUIRED for `psynet debug local` (install via conda: \`conda install -c conda-forge redis-server\`)"
+have pg_isready && { pg_isready >/dev/null 2>&1 && ok "postgres reachable on localhost:5432 (required for debug local; also need dallinger user + dallinger db)" || bad "pg_isready installed but Postgres is DOWN — start postgres + create the dallinger user/db"; } || bad "pg_isready not found — PostgreSQL is REQUIRED for \`psynet debug local\` (install via conda: \`conda install -c conda-forge postgresql\`)"
 if have docker; then
-  if docker info >/dev/null 2>&1; then ok "docker daemon reachable"; else warn "docker installed but daemon unreachable → use the ec2 backend"; fi
-else warn "docker not installed → use the ec2 backend for server-side work"; fi
-have pg_isready && { pg_isready >/dev/null 2>&1 && ok "postgres reachable" || warn "postgres not reachable (started by psynet/Docker at run time)"; } || warn "pg_isready not found (ok if using Docker)"
-have redis-cli && { redis-cli ping >/dev/null 2>&1 && ok "redis reachable" || warn "redis not reachable (started by psynet/Docker at run time)"; } || warn "redis-cli not found (ok if using Docker)"
+  if docker info >/dev/null 2>&1; then ok "docker daemon reachable (optional; the --docker debug path uses it)"; else warn "docker installed but daemon unreachable (optional — debug local default path doesn't need it)"; fi
+else warn "docker not installed (optional — only needed for --docker debug or real deploy via Dallinger)"; fi
 
 echo "== Deploy (EC2 / AWS) =="
 if have aws; then
