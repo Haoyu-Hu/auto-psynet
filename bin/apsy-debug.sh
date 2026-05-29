@@ -35,7 +35,54 @@ resolve_psynet_bin() {
   command -v psynet 2>/dev/null
 }
 
+PID_FILE=".apsy/runtime.pid"
+
+# Subcommand: stop — kill a background psynet started by an earlier `local` run.
+do_stop() {
+  if [[ ! -f "$PID_FILE" ]]; then
+    echo "[apsy-debug] no $PID_FILE — nothing started by this script in this dir."
+    # Soft probe for orphan psynet matching this experiment dir.
+    local cand
+    cand=$(pgrep -u "$USER" -f "psynet debug local" 2>/dev/null | head -3)
+    if [[ -n "$cand" ]]; then
+      echo "[apsy-debug] but I see psynet debug local process(es) running:"
+      ps -p $cand -o pid,etime,cmd 2>/dev/null | sed 's/^/   /'
+      echo "[apsy-debug] kill manually if these belong to this experiment: kill -INT <pid>"
+    fi
+    return 0
+  fi
+  local pid
+  pid="$(cat "$PID_FILE")"
+  if [[ -z "$pid" ]] || ! kill -0 "$pid" 2>/dev/null; then
+    echo "[apsy-debug] $PID_FILE points at $pid but that process is not running (stale)."
+    rm -f "$PID_FILE"
+    return 0
+  fi
+  echo "[apsy-debug] stopping psynet (pid $pid) via SIGINT..."
+  kill -INT "$pid" 2>/dev/null
+  # Give it up to 8s to exit cleanly, then SIGKILL.
+  local i=0
+  while [[ $i -lt 16 ]] && kill -0 "$pid" 2>/dev/null; do
+    sleep 0.5; i=$((i+1))
+  done
+  if kill -0 "$pid" 2>/dev/null; then
+    echo "[apsy-debug] still alive after 8s — sending SIGKILL"
+    kill -9 "$pid" 2>/dev/null
+    sleep 1
+  fi
+  # Best-effort sweep for orphan workers (gunicorn/flask) started by dallinger
+  for orphan in $(pgrep -u "$USER" -f '/bin/(psynet|flask|gunicorn|dallinger)' 2>/dev/null); do
+    kill -9 "$orphan" 2>/dev/null
+  done
+  rm -f "$PID_FILE"
+  echo "[apsy-debug] ✅ stopped + cleaned $PID_FILE"
+}
+
 case "$target" in
+  stop)
+    do_stop
+    exit 0
+    ;;
   local)
     echo "[apsy-debug] target = local → psynet debug local (default --no-docker auto-reload path)"
 
@@ -175,6 +222,10 @@ GI
 LIFE
 
     # --- 7. Launch ---
+    # Write the PID file BEFORE exec so the same shell (which becomes psynet via exec) is what's tracked.
+    mkdir -p .apsy
+    echo "$$" > "$PID_FILE"
+    echo "[apsy-debug] PID $$ recorded in $PID_FILE (use \`bash $DIR/apsy-debug.sh stop\` to kill cleanly)"
     echo "[apsy-debug] launching: $PSYNET_BIN debug local"
     exec "$PSYNET_BIN" debug local
     ;;
@@ -191,7 +242,13 @@ LIFE
     ;;
 
   *)
-    echo "usage: apsy-debug.sh {local|ec2}"
+    echo "usage: apsy-debug.sh {local|ec2|stop}"
+    echo
+    echo "  local : pre-flight checks + auto-fix + launch \`psynet debug local\`. Writes PID to"
+    echo "          .apsy/runtime.pid for later \`stop\`."
+    echo "  ec2   : provision/refresh Dallinger EC2 + debug over SSH (Phase-1 stub for now)."
+    echo "  stop  : SIGINT the psynet recorded in .apsy/runtime.pid; SIGKILL after 8s if still"
+    echo "          alive; sweep orphan workers; remove the PID file."
     exit 2
     ;;
 esac
