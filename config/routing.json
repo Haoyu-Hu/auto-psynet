@@ -288,6 +288,32 @@
         "apsy export",
         "apsy:export"
       ]
+    },
+    "services": {
+      "command": "services",
+      "priority": 9,
+      "keywords": [
+        "service",
+        "services",
+        "start services",
+        "stop services",
+        "restart services",
+        "service status",
+        "services status",
+        "apsy services",
+        "apsy:services",
+        "start redis",
+        "stop redis",
+        "start postgres",
+        "stop postgres",
+        "redis postgres",
+        "postgres redis",
+        "runtime services",
+        "start the services",
+        "stop the services",
+        "redis up",
+        "postgres up"
+      ]
     }
   },
   "stage_next_action": {

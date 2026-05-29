@@ -31,15 +31,15 @@ not Python packages):
    minutes and is rarely worth it.
 
 **Service bootstrap — one command** (handles everything automatically):
-```bash
-bash bin/apsy-services.sh start
-# - Detects redis-server + pg_ctl on PATH or common conda paths (or via APSY_*_BIN env vars)
-# - State dir defaults to ~/.auto-psynet/services/ (redis/, pg/, pg.log)
-# - initdb's the pg data dir on first run
-# - Auto-creates dallinger superuser + dallinger database
-# - Idempotent: "already running" on a second start
-# - bash bin/apsy-services.sh stop / status / restart available
 ```
+in Claude:   /apsy:services start            (defaults to `status` if no subcommand)
+in shell:    bash bin/apsy-services.sh start
+```
+- Detects redis-server + pg_ctl on PATH or common conda paths (or via APSY_*_BIN env vars).
+- State dir defaults to `~/.auto-psynet/services/` (`redis/`, `pg/`, `pg.log`).
+- initdb's the pg data dir on first run; auto-creates `dallinger` superuser + database.
+- Idempotent: "already running" on a second start. State preserved across stop.
+- Subcommands: `start` / `stop` / `restart` / `status` (default).
 
 **Manual bootstrap** (if you'd rather drive each step yourself):
 ```bash
