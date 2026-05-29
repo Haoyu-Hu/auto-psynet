@@ -63,18 +63,25 @@ Write to `~/.auto-psynet/config` via `bin/apsy-config.sh set APSY_PROJECT_DIR <a
 PsyNet's `assets` / `launch-data` / `artifacts` paths are hardcoded with `os.path.expanduser`
 (`psynet/asset.py:2595`, `psynet/command_line.py:948`, `psynet/artifact.py:453`). The cleanest way
 to redirect them is to symlink `~/psynet-data` to `$APSY_PROJECT_DIR/data`. **Offer this via
-`AskUserQuestion`, but ONLY if it's safe:**
+`AskUserQuestion`, then run `bin/apsy-link-data.sh` which deterministically applies the 5-case
+safety table** (verified by direct test 2026-05-28; all 5 cases pass):
 
-| Current state of `~/psynet-data` | Action |
-|---|---|
-| Does NOT exist | `mkdir -p $APSY_PROJECT_DIR/data; ln -s $APSY_PROJECT_DIR/data ~/psynet-data` |
-| Empty directory (no files, no subdirs) | `rmdir ~/psynet-data; ln -s $APSY_PROJECT_DIR/data ~/psynet-data` |
-| Already a symlink pointing at `$APSY_PROJECT_DIR/data` | no-op (already done) |
-| Already a symlink pointing elsewhere | **Refuse** — show the current target; ask the user to resolve manually |
-| Real dir with content | **Refuse** — list the contents (`ls -la ~/psynet-data`); suggest manual migration: `mv ~/psynet-data/* $APSY_PROJECT_DIR/data/ && rmdir ~/psynet-data && ln -s $APSY_PROJECT_DIR/data ~/psynet-data` |
+| Current state of `~/psynet-data` | Action (apsy-link-data.sh) | Exit |
+|---|---|---|
+| Does NOT exist | `mkdir -p $dest; ln -s $dest $target` | 0 |
+| Empty directory | `rmdir $target; mkdir -p $dest; ln -s $dest $target` | 0 |
+| Already symlink → `$dest` | no-op | 0 |
+| Symlink elsewhere | **Refuse** — print current target; ask user to resolve | 2 |
+| Real dir with content | **Refuse** — print `ls -la` + migration hint (mv-then-symlink) | 2 |
+| Exists but not dir/symlink (file, fifo, …) | **Refuse** — print `file -b` | 2 |
 
 When the symlink is in place, `psynet export local` (via `bin/apsy-export.sh`), asset staging,
 launch-data writes, and artifact storage ALL land under `$APSY_PROJECT_DIR/data/...` transparently.
+
+**Invocation:** `bash bin/apsy-link-data.sh` (defaults: target=`~/psynet-data`,
+dest=`$APSY_PROJECT_DIR/data` from config). Override via `--target /alt/path` or `--dest /alt/dir`
+(useful for testing). Exit codes: 0 = symlink in place; 2 = refused (user resolves manually);
+3 = no destination resolvable.
 
 ## STEP 6 — Report + (optional) migration
 - Confirm with the user: print the path + a sample of what now lives there (`ls -1d
