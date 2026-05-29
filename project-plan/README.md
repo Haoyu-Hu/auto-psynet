@@ -5,7 +5,7 @@
 > data analysis and iteration → a publication-ready scientific paper.
 
 **Plugin call name:** `apsy` (`/apsy:*`) · **Repo:** `auto-psynet` · **Status:** Phases 0-3 + 5
-shipped (32 skills · 24 commands · 9 personas · 4 hooks · 1 optional MCP server; assembly green on
+shipped (32 skills · 25 commands · 9 personas · 4 hooks · 1 optional MCP server; assembly green on
 `main`). The plugin's full BUILD-to-RUN-to-EXPORT-to-PUBLISH path is end-to-end on a properly
 set-up box. The entire runtime-arc is now driven through Claude Code slash commands (with the
 `bin/apsy-*` engines still usable standalone in any shell):

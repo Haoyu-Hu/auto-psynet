@@ -13,9 +13,8 @@ a file-based state/memory layer (the "notebook") and a pluggable runtime (the "l
 ┌──────────────────────────────────────────────────────────────────────────────────┐
 │  CLAUDE CODE PLUGIN  (the brain — declarative)                                     │
 │                                                                                    │
-│  Commands  /apsy:setup /apsy:install /apsy:update /apsy:doctor /apsy:status              │
-│  (entry)   /apsy:idea /apsy:build /apsy:pilot /apsy:debug /apsy:deploy /apsy:analyze     │
-│            /apsy:paper • /apsy:auto (router) /apsy:run (autonomous) /apsy:add-recipe     │
+│  Commands (25) — Bootstrap · Discover · Pipeline · Meta · Per-experiment config.   │
+│                  Canonical list in doc 04 §4.3; live in-CLI via /apsy:help.        │
 │      │                                                                             │
 │      ▼                                                                             │
 │  Skills (EXECUTION CONTRACTS) ── orchestrate ──▶ Agents / Personas (expert brains) │
@@ -56,8 +55,8 @@ auto-psynet/                          # the plugin repo (this repo)
 │   ├── plugin.json                   # name:"apsy" (LOCKED), version, explicit skills[] + commands[]
 │   ├── marketplace.json              # marketplace entry (name must match plugin.json)
 │   └── PLUGIN_NAME_LOCK.md           # why the name stays "apsy"
-├── commands/                         # slash command .md files (see doc 04) — 21 commands
-├── skills/                           # SKILL.md execution contracts (one dir each, see doc 04) — 30 skills
+├── commands/                         # slash command .md files (see doc 04) — 25 commands
+├── skills/                           # SKILL.md execution contracts (one dir each, see doc 04) — 32 skills
 │   ├── setup/ install/ update/ doctor/ status/
 │   ├── formulate/ design/ power-analysis/ analysis-plan/ plan-review/
 │   ├── scaffold/ implement-paradigm/ wire-timeline/ test-experiment/
