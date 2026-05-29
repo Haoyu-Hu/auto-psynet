@@ -71,9 +71,10 @@ When success markers appear, report to the user:
               (or check `dashboard_user` / `dashboard_password` in experiment.py)
 
 Next steps:
-   - Export data:   bash ${CLAUDE_PLUGIN_ROOT}/bin/apsy-export.sh   (redirects to
-                   $APSY_PROJECT_DIR/data/<study>/ when project-dir is set)
-   - Stop cleanly:  /apsy:debug stop   (or bash bin/apsy-debug.sh stop)
+   - Export data:   /apsy:export                   (redirects to $APSY_PROJECT_DIR/data/<study>/
+                                                    when project-dir is set; same as `bash
+                                                    bin/apsy-export.sh` outside Claude)
+   - Stop cleanly:  /apsy:debug stop               (or bash bin/apsy-debug.sh stop)
    - Hot-reload caveats: edits to Exp class / TrialMaker / module-level imports → restart
      (other edits usually picked up by werkzeug's stat reloader).
 ```

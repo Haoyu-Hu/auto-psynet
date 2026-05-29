@@ -205,11 +205,14 @@ GI
 ────────────────────────────────────────────────────────────────────────────────
   RUNTIME LIFECYCLE — read this before you launch.
   • PsyNet experiments have NO stop signal. The server runs INDEFINITELY.
-  • Ctrl+C in THIS terminal is the only way to kill it.
-  • Before Ctrl+C: in a SEPARATE shell, run  bash bin/apsy-export.sh
-    (the wrapper passes --path APSY_PROJECT_DIR/data/<study> when project-dir is set;
-    otherwise it falls through to psynet's default ~/psynet-data/export/<study>__...).
-    Verify the export contents, THEN come back here and Ctrl+C to destroy.
+  • Stop via:  /apsy:debug stop   (or  bash bin/apsy-debug.sh stop)
+    Or:        Ctrl+C in THIS terminal (if running foreground).
+  • Before stopping: export the data
+       in Claude:     /apsy:export
+       in a shell:    bash bin/apsy-export.sh
+    Both redirect to APSY_PROJECT_DIR/data/<study> when project-dir is set; otherwise
+    fall through to psynet's default ~/psynet-data/export/<study>__...
+    Verify the export contents, THEN stop psynet to destroy.
   • Hot-reload (werkzeug stat reloader) fires on every edit, but workers stay STALE
     after class-structure changes — RESTART is required for:
       - the top-level Exp class (config dict, label, attributes)

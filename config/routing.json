@@ -97,13 +97,14 @@
       "keywords": [
         "analyze",
         "analysis",
-        "results",
         "stats",
         "effect size",
         "run analysis",
-        "export data",
+        "data quality",
         "findings",
-        "interpret"
+        "interpret",
+        "compute effects",
+        "preregistered analysis"
       ]
     },
     "deploy": {
@@ -266,6 +267,26 @@
         "project home",
         "project-dir",
         "apsy_project_dir"
+      ]
+    },
+    "export": {
+      "command": "export",
+      "priority": 8,
+      "keywords": [
+        "psynet export",
+        "psynet export local",
+        "export the experiment",
+        "export experiment",
+        "export experiment data",
+        "export experiment results",
+        "export results",
+        "export data",
+        "save data",
+        "save results",
+        "dump data",
+        "export local",
+        "apsy export",
+        "apsy:export"
       ]
     }
   },
