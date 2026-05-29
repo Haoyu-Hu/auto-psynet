@@ -314,6 +314,25 @@
         "redis up",
         "postgres up"
       ]
+    },
+    "help": {
+      "command": "help",
+      "priority": 9,
+      "keywords": [
+        "help",
+        "apsy help",
+        "apsy:help",
+        "list commands",
+        "show commands",
+        "what commands",
+        "command list",
+        "command reference",
+        "how do i use",
+        "what does",
+        "explain command",
+        "command help",
+        "available commands"
+      ]
     }
   },
   "stage_next_action": {
