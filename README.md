@@ -1,9 +1,15 @@
 # Auto-PsyNet (`apsy`)
 
+<img src="assets/avatar.png" alt="Auto-PsyNet logo" width="128" align="right" />
+
 A Claude Code plugin that automates the lifecycle of online **behavioral experiments** built on
 [PsyNet](https://psynetdev.gitlab.io/PsyNet/): from a raw research idea → preregistered plan →
 working PsyNet code → LLM-piloted (and human) deployment → analysis → publication-ready paper.
 Subjects can be **humans, LLM agents, or both**.
+
+> Also available as a Cursor Marketplace plugin →
+> [auto-psynet-cursor](https://github.com/Haoyu-Hu/auto-psynet-cursor). Same logic, gates,
+> ethics policy, and `bin/` engines; install with `/add-plugin apsy` in Cursor 2.5+.
 
 ## Install
 
@@ -95,10 +101,12 @@ one-off work, less convenient across sessions.
 
 ## Optional: MCP server
 
-For non-Claude clients (Cursor, Codex, custom automation), an opt-in MCP server exposes six engine
-tools (`apsy_status`, `apsy_doctor`, `apsy_route`, `apsy_next`, `apsy_power`, `apsy_data_quality`).
-See [`mcp-server/README.md`](mcp-server/README.md). Off by default — set `APSY_MCP_ENABLED=true` to
-enable.
+An opt-in MCP server exposes six deterministic engine tools (`apsy_status`, `apsy_doctor`,
+`apsy_route`, `apsy_next`, `apsy_power`, `apsy_data_quality`) to any MCP client — Claude Code,
+Cursor, Codex, or your own automation. See [`mcp-server/README.md`](mcp-server/README.md). Off
+by default — set `APSY_MCP_ENABLED=true` to enable. (The Cursor port wires this server up
+automatically via its `mcp.json`; Claude Code users add it via `~/.claude.json` or the plugin's
+manifest if desired.)
 
 ## Status
 

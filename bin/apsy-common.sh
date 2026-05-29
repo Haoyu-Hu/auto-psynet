@@ -26,9 +26,13 @@ apsy_set_config() {
   fi
 }
 
-# Resolve the plugin root (prefer the Claude Code env var; fall back to this script's parent).
+# Resolve the plugin root.
+# Priority: CLAUDE_PLUGIN_ROOT (this is the Claude Code plugin) > CURSOR_PLUGIN_ROOT (the
+# Cursor port at github.com/Haoyu-Hu/auto-psynet-cursor reuses the same bin/) > derive
+# from this script's parent. The dual-env fallback lets the same bin/ work unchanged
+# under both editors.
 apsy_plugin_root() {
-  echo "${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+  echo "${CLAUDE_PLUGIN_ROOT:-${CURSOR_PLUGIN_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}}"
 }
 
 # apsy_resolve_python [override_path]

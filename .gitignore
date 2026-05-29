@@ -1,6 +1,7 @@
-# Reference material (local clones, not part of the shipped plugin)
+# Reference material + dev-only directories (not part of the shipped plugin)
 materials/
 experiment-examples/
+plugin-cursor/
 
 # Python
 __pycache__/
@@ -22,4 +23,5 @@ node_modules/
 .DS_Store
 *.swp
 *~
-experiment-examples/
+.idea/
+.vscode/
