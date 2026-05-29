@@ -95,7 +95,8 @@ GI
         echo "[apsy-debug] ✅ redis reachable on ${REDIS_HOST:-localhost}:${REDIS_PORT:-6379}"
       else
         echo "[apsy-debug] ❌ Redis is NOT reachable (psynet _pre_launch calls redis on all 3 debug paths)"
-        echo "                start it: redis-server --daemonize yes"
+        echo "                easy fix: bash $DIR/apsy-services.sh start"
+        echo "                or manually: redis-server --daemonize yes"
         miss=1
       fi
     else
@@ -113,7 +114,8 @@ GI
         echo "[apsy-debug] ✅ postgres reachable on ${PGHOST:-localhost}:${PGPORT:-5432}"
       else
         echo "[apsy-debug] ❌ Postgres is NOT reachable (dallinger uses it for the experiment DB)"
-        echo "                start it: pg_ctl -D <data> start  (and ensure dallinger user + db exist)"
+        echo "                easy fix: bash $DIR/apsy-services.sh start  (handles initdb + dallinger user/db automatically)"
+        echo "                or manually: pg_ctl -D <data> start  + create dallinger user + db"
         miss=1
       fi
     else
@@ -128,8 +130,12 @@ GI
     fi
     if [[ "$miss" -eq 1 ]]; then
       echo
-      echo "❌ Pre-launch services not ready. Set them up before re-running (see"
-      echo "   skills/psynet/psynet-function/cli-and-deployment.md for a verified bootstrap)."
+      echo "❌ Pre-launch services not ready."
+      echo "   One-command fix: bash $DIR/apsy-services.sh start"
+      echo "     (detects redis-server + pg_ctl on PATH or common conda paths; initdb's the pg"
+      echo "     data dir on first run; auto-creates the dallinger user + database; idempotent"
+      echo "     on already-running.)"
+      echo "   For per-OS install hints see skills/psynet/psynet-function/cli-and-deployment.md."
       exit 2
     fi
 

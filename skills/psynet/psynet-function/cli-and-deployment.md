@@ -30,12 +30,20 @@ not Python packages):
 3. **Build from source** — last resort. Redis source builds in ~30s on a small box; Postgres takes
    minutes and is rarely worth it.
 
-**Service bootstrap** (works regardless of how you got the binaries):
+**Service bootstrap — one command** (handles everything automatically):
 ```bash
-# Redis (no config needed for local debug)
-redis-server --daemonize yes
+bash bin/apsy-services.sh start
+# - Detects redis-server + pg_ctl on PATH or common conda paths (or via APSY_*_BIN env vars)
+# - State dir defaults to ~/.auto-psynet/services/ (redis/, pg/, pg.log)
+# - initdb's the pg data dir on first run
+# - Auto-creates dallinger superuser + dallinger database
+# - Idempotent: "already running" on a second start
+# - bash bin/apsy-services.sh stop / status / restart available
+```
 
-# PostgreSQL — initdb a data dir, start, create the dallinger user + db
+**Manual bootstrap** (if you'd rather drive each step yourself):
+```bash
+redis-server --daemonize yes
 initdb -D ~/apsy-pg --auth=trust
 pg_ctl -D ~/apsy-pg -l ~/apsy-pg.log start
 psql -U postgres -c "CREATE USER dallinger SUPERUSER; CREATE DATABASE dallinger OWNER dallinger"
