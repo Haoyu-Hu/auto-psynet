@@ -40,7 +40,8 @@ level — real human deploy always requires explicit human approval + IRB attest
 | `/apsy:setup` | First-run config — Python interpreter / managed venv, project directory, LLM-participant backend, username/server prefix, AWS, base domain, consent default. |
 | `/apsy:install` | Auto-install essential deps (`psynet` + `dallinger` + optional stats stack); offers managed venv at `~/.auto-psynet/venv`. |
 | `/apsy:update` | Upgrade PsyNet / Dallinger; reuses the install engine via `--upgrade`. |
-| `/apsy:project-dir` | Set or inspect `APSY_PROJECT_DIR` — the consistent root where new experiments are scaffolded. Optionally symlinks `~/psynet-data` into the project tree. |
+| `/apsy:project-dir` | Set or inspect `APSY_PROJECT_DIR`. Optionally symlinks `~/psynet-data` → `$APSY_PROJECT_DIR/data` via `bin/apsy-link-data.sh` (5-case safety table; refuses if `~/psynet-data` has existing content). |
+| `/apsy:services` | Start / stop / status of Redis + PostgreSQL for `psynet debug local`. Auto-detects binaries, initdb's pg, creates dallinger user + db. Idempotent. |
 | `/apsy:doctor` | Environment diagnostics — interpreter, essential deps, Redis + Postgres reachability, LLM keys, AWS, project-dir, config. |
 | `/apsy:status` | Where the current experiment stands (reads `<experiment>/.apsy/state.json`) + the next action. |
 
@@ -48,12 +49,13 @@ level — real human deploy always requires explicit human approval + IRB attest
 
 | Command | Stage | Purpose |
 |---------|-------|---------|
-| `/apsy:idea` | FORMULATE | Idea → verified, preregistered plan (gate G1). |
+| `/apsy:idea` | FORMULATE | Idea → verified, preregistered plan (gate G1). Scaffolds into `$APSY_PROJECT_DIR/<study>/` when project-dir is set. |
 | `/apsy:build` | BUILD | Generate the PsyNet experiment from the locked plan; scaffold + implement + bot-test to G2. |
 | `/apsy:pilot` | PILOT | Run the experiment with LLM-agent participants — validate pipeline + analysis on synthetic data (gate G3). No human spend. |
-| `/apsy:debug` | — | Run the experiment for debugging — local (`psynet debug local`) or on a provisioned EC2 instance. |
+| `/apsy:debug` | — | nohup-launch `psynet debug local` via `bin/apsy-debug.sh` (auto-fixes `.gitignore`/`git init`/`constraints.txt`, checks services, prints lifecycle reminder). `/apsy:debug stop` cleanly SIGINT's via `.apsy/runtime.pid`. |
+| `/apsy:export` | — | Export experiment data while psynet is live. Preflights for runtime; wraps `bin/apsy-export.sh` (redirects to `$APSY_PROJECT_DIR/data/<study>/` via `--path` when project-dir is set). |
 | `/apsy:deploy` | DEPLOY | Deploy for **real human** data (gate G4) + recruit. HARD gate at every autonomy level. |
-| `/apsy:analyze` | ANALYZE | Export data, run the preregistered analysis, report effects; iterate or ship (gates G5/G6/G7). |
+| `/apsy:analyze` | ANALYZE | Run the preregistered analysis on exported data, report effects; iterate or ship (gates G5/G6/G7). |
 | `/apsy:paper` | PUBLISH | Assemble the paper draft (Methods from pipeline, Results from analysis) + an OSF-ready reproducibility package. |
 
 ### Autonomy & routing
@@ -114,23 +116,38 @@ $APSY_PROJECT_DIR/data/<study>` to `psynet export local`; the optional `~/psynet
 (offered by `/apsy:project-dir`) redirects PsyNet's hardcoded `assets`/`launch-data`/`artifacts`
 paths transparently.
 
-### Running an experiment locally (`psynet debug local`)
-
-`bin/apsy-debug.sh local` is a one-command wrapper around `psynet debug local` that handles the 8
-pre-launch requirements automatically:
+### Running an experiment locally (the slash-command flow)
 
 ```bash
 cd ~/research/apsy-experiments/pleasantness-rating
-bash bin/apsy-debug.sh local
-# Auto-fixes (silent): .gitignore, git init, constraints.txt via `psynet generate-constraints`
-# Hard checks (block): Redis reachable, Postgres reachable
-# Soft checks (warn):  recruiter="generic" + dashboard_password in experiment.py
-# Lifecycle reminder:  Ctrl+C is the only stop; export BEFORE killing
-# Then: psynet debug local
+/apsy:services start    # Redis + Postgres, with dallinger user + db (idempotent)
+/apsy:debug             # auto-fixes pre-launch state + nohup-launches psynet
+                         #   → reports "Experiment launch complete!" + dashboard URL
+                         #   → process survives Claude session ending
+/apsy:export            # exports data into $APSY_PROJECT_DIR/data/<study>/
+/apsy:debug stop        # SIGINTs via .apsy/runtime.pid; sweeps orphan workers
+/apsy:services stop     # services down (state preserved on disk)
 ```
 
+Each slash command wraps a `bin/apsy-*` engine that's also usable standalone in any shell (no
+Claude needed). The slash commands add preflight + monitoring + reporting on top.
+
+**What `bin/apsy-debug.sh` does** (auto-fixes pre-launch state):
+- `.gitignore` (standard PsyNet patterns) — created if missing
+- `git init` + initial commit — required by psynet's git introspection
+- `constraints.txt` (via `psynet generate-constraints`) — required by `_pre_launch`
+- PATH hygiene — venv `bin/` ahead of system Python (else `flask` resolves wrong)
+- Hard checks: Redis reachable, PostgreSQL reachable → suggests `/apsy:services start` on fail
+- Soft checks: `recruiter="generic"` + `dashboard_password` in `Exp.config`
+- Lifecycle reminder: hot-reload caveats + export-before-stop workflow
+- nohup-detached launch + PID file → process survives session ending; `stop` subcommand kills cleanly
+
 **Runtime services** (Redis at `localhost:6379` + PostgreSQL at `localhost:5432` with a `dallinger`
-user + db) are required — install priority:
+user + db) are required for `psynet debug local`. `/apsy:services start` handles everything:
+detects binaries (PATH or common conda paths), `initdb`'s the pg data dir on first run,
+auto-creates the `dallinger` superuser + database, and is idempotent on already-running.
+
+Install priority if the binaries aren't on your box:
 
 ```
 1. System: apt install redis-server postgresql (Ubuntu)  ·  brew install redis postgresql@14 (macOS)
@@ -141,19 +158,23 @@ user + db) are required — install priority:
 > `pip`/`uv` cannot install Redis or PostgreSQL — they're server binaries, not Python packages.
 > The default `psynet debug local` path does NOT need Docker.
 
-### Export-before-kill workflow
+### Export-before-stop workflow
 
 PsyNet experiments have **no in-experiment stop signal** — `psynet debug local` runs indefinitely.
-The only way to stop it is `Ctrl+C` in the terminal that started it. Before killing:
+Stop via `/apsy:debug stop` (or `Ctrl+C` if running foreground). Before stopping:
 
 ```bash
-# In a SEPARATE shell, while the debug server is up:
-bash bin/apsy-export.sh
+/apsy:export                        # exports the live data
 # → If APSY_PROJECT_DIR is set, redirects to <project-dir>/data/<study>/
 # → Otherwise falls through to psynet's default ~/psynet-data/export/<study>__.../
-# Verify the export contents (anonymous/data/*.csv + source_code.zip + database.zip).
-# THEN come back to the debug shell and Ctrl+C.
+# → Bundle: anonymous/data/*.csv (PRIVACY-SAFE) + regular/data/... (HAS PII) +
+#           source_code.zip + database.zip
+# Verify, THEN:
+/apsy:debug stop                    # clean SIGINT + sweep orphans + remove PID file
 ```
+
+`anonymous/` is what `bin/apsy-repro.sh` (called by `/apsy:paper`) bundles into the OSF package.
+`regular/` has PII and **must never** be shared.
 
 ### Hot-reload behavior (verified)
 
@@ -199,12 +220,14 @@ Python and is **off by default** (`APSY_MCP_ENABLED=true` to enable).
 
 ```
 .claude-plugin/   plugin + marketplace manifests (name locked to "apsy")
-commands/         slash commands (22)
+commands/         slash commands (24)
 skills/           SKILL.md execution contracts (32) — incl. skills/psynet/ knowledge hub
 agents/           expert personas + routing (config.yaml) — 9 personas
 hooks/            SessionStart + PreToolUse lifecycle hooks (first-run nudge, lint, G4 spend gate)
-bin/              the deterministic engine (22 helpers — incl. apsy-debug.sh + apsy-export.sh
-                  wrappers, apsy_resolve_python interpreter resolver, apsy-check.sh deps/versions)
+bin/              the deterministic engine (23 helpers — apsy_resolve_python interpreter resolver,
+                  apsy-services.sh runtime services, apsy-debug.sh (auto-fix + nohup launch +
+                  stop subcommand), apsy-export.sh (--path redirect), apsy-link-data.sh (~/psynet-
+                  data symlink helper), apsy-check.sh, apsy-pilot.sh + apsy_llm_participant.py, …)
 config/           ethics-policy, gates G1-G7, pipeline, affinity, blind-spots, templates
 mcp-server/       optional stdlib MCP server (off by default)
 tests/            assembly + behavior tests

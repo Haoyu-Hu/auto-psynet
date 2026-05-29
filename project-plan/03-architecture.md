@@ -75,23 +75,28 @@ auto-psynet/                          # the plugin repo (this repo)
 │   ├── first-run-nudge.sh            # SessionStart: nudge /apsy:setup when ~/.auto-psynet/config absent
 │   ├── psynet-lint.sh                # PreToolUse Edit|Write: inject PsyNet code-gen gotchas
 │   └── spend-gate.sh                 # PreToolUse Bash: HARD G4 block on real deploy/recruit
-├── bin/                              # the deterministic engine (apsy-*.{sh,py} wrappers) — 22 helpers
+├── bin/                              # the deterministic engine (apsy-*.{sh,py} wrappers) — 23 helpers
 │   ├── apsy-common.sh                #   shared: config I/O + apsy_resolve_python (interpreter resolver)
 │   ├── apsy-config.sh                #   user-level config get/set (~/.auto-psynet/config)
 │   ├── apsy-install.sh apsy-update*  #   pip install/upgrade + managed venv (--create-venv)
 │   ├── apsy-check.sh                 #   focused dep + version check (deps, PyPI latest, drift)
 │   ├── apsy-doctor.sh apsy-state.sh  #   diagnostics + per-experiment state
+│   ├── apsy-services.sh              #   start/stop/status of Redis + Postgres for `psynet debug
+│   │                                 #   local`; auto-detects binaries (PATH or conda); initdb's
+│   │                                 #   pg + creates dallinger user + db; idempotent
 │   ├── apsy-debug.sh                 #   pre-launch auto-fix (.gitignore/git init/constraints.txt) +
-│   │                                 #   Redis+Postgres reachability checks + soft-checks (recruiter/
-│   │                                 #   dashboard_password) + lifecycle reminder → psynet debug local
+│   │                                 #   Redis+Postgres reachability checks + lifecycle reminder →
+│   │                                 #   nohup-launch + PID-file write + `stop` subcommand
 │   ├── apsy-export.sh                #   wrapper for `psynet export local`; auto-adds
 │   │                                 #   `--path $APSY_PROJECT_DIR/data/<study>` for redirect
+│   ├── apsy-link-data.sh             #   5-case safety symlink helper for `~/psynet-data` →
+│   │                                 #   $APSY_PROJECT_DIR/data (refuses if target has content)
 │   ├── apsy-deploy.sh                #   deploy adapter (local/llm-pilot/ec2) — G4-gated
 │   ├── apsy-recruit.sh               #   recruitment status (Prolific/Lucid/MTurk thin)
 │   ├── apsy-route.py apsy-run.py     #   smart router + autonomous pipeline state machine
 │   ├── apsy-power.py apsy-data-quality.py   #   stats helpers (effect sizes, exclusions)
 │   ├── apsy-repro.sh                 #   OSF-ready repro package assembler (code + paper + gates)
-│   ├── apsy-pilot.sh                 #   LLM-participant pilot driver
+│   ├── apsy-pilot.sh apsy_llm_participant.py   #   LLM-participant pilot driver + bot monkeypatch
 │   └── apsy-add-recipe.py            #   extend the PsyNet knowledge pack (auto-index parent SKILL.md)
 ├── config/
 │   ├── pipeline.yaml                 # the 5-stage workflow-as-code (agents, gates, thresholds)

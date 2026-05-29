@@ -5,15 +5,21 @@
 > data analysis and iteration → a publication-ready scientific paper.
 
 **Plugin call name:** `apsy` (`/apsy:*`) · **Repo:** `auto-psynet` · **Status:** Phases 0-3 + 5
-shipped (32 skills · 22 commands · 9 personas · 4 hooks · 1 optional MCP server; assembly green on
+shipped (32 skills · 24 commands · 9 personas · 4 hooks · 1 optional MCP server; assembly green on
 `main`). The plugin's full BUILD-to-RUN-to-EXPORT-to-PUBLISH path is end-to-end on a properly
-set-up box: `/apsy:setup` → `/apsy:install` (managed venv) → `/apsy:project-dir` (one root for all
-experiments) → `/apsy:idea` (FORMULATE+G1) → `/apsy:build` (BUILD+G2) → `bin/apsy-debug.sh local`
-(auto-fixes .gitignore/git/constraints + checks services + launches `psynet debug local`) →
-`bin/apsy-export.sh` (redirects to `$APSY_PROJECT_DIR/data/<study>` via `--path`) → `/apsy:analyze`
-+ `/apsy:paper` (G6+OSF package). Phase 4 (real human studies) remains infra-blocked on
-AWS+domain; everything else is exercised on synthetic data + verified via direct psynet 13.2 /
-dallinger 12.2 runs (2026-05-28).
+set-up box. The entire runtime-arc is now driven through Claude Code slash commands (with the
+`bin/apsy-*` engines still usable standalone in any shell):
+
+```
+/apsy:setup → /apsy:install → /apsy:project-dir → /apsy:idea → /apsy:build
+            → /apsy:services start → /apsy:debug → /apsy:export → /apsy:debug stop
+            → /apsy:services stop → /apsy:analyze → /apsy:paper
+```
+
+Each command wraps a deterministic engine (`bin/apsy-services.sh`, `bin/apsy-debug.sh`,
+`bin/apsy-export.sh`, etc.) and adds preflight + monitoring + reporting on top. Phase 4 (real
+human studies) remains infra-blocked on AWS+domain; everything else is exercised on synthetic data
++ verified via direct psynet 13.2 / dallinger 12.2 runs (2026-05-28).
 
 This directory is the **living plan** for the plugin — the design intent and the rationale, kept in
 sync with what's actually shipped. Read the documents in order.
