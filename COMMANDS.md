@@ -9,7 +9,8 @@ args) or `/apsy:help <name>` for a single command. The authoritative source for 
 - `$ARGUMENTS` — whatever the user types after the command (e.g. `/apsy:install --psynet 13.2.0`).
 - `~/.auto-psynet/config` — user-level config (LLM backend, `APSY_PROJECT_DIR`, AWS, …).
 - `<experiment>/.apsy/` — per-experiment state (plan, `state.json`, decisions, reports).
-- Gates **G1–G7** are defined in [`config/gates/`](config/gates/); ethics policy in
+- Gates **G1–G7** are introduced in [`GATES.md`](GATES.md) (plain-English, conceptual);
+  runnable rubrics in [`config/gates/`](config/gates/); ethics policy in
   [`config/ethics-policy.md`](config/ethics-policy.md).
 
 ## Table of contents
@@ -380,9 +381,10 @@ Override the default EC2 instance type for provisioning. Default is auto-sized
 ## See also
 
 - [`README.md`](README.md) — install + quick start.
+- [`GATES.md`](GATES.md) — plain-English introduction to the G1–G7 quality gates.
 - [`project-plan/04-skills-agents-commands.md`](project-plan/04-skills-agents-commands.md)
   §4.3 — the design-doc command catalog with priorities (P0/P1/P2) and skill mapping.
-- [`config/gates/`](config/gates/) — full rubrics for G1–G7.
+- [`config/gates/`](config/gates/) — runnable rubrics for G1–G7.
 - [`config/ethics-policy.md`](config/ethics-policy.md) — the integrity policy (synthetic data
   labeling, G4 hard gate, wage floor, AI-involvement disclosure).
 - [`config/routing.json`](config/routing.json) — the keyword routing table used by

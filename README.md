@@ -39,6 +39,11 @@ For real human deployment, `/apsy:deploy` triggers gate **G4** — explicit huma
 attestation + a spend cap required at every autonomy level (see
 [`config/ethics-policy.md`](config/ethics-policy.md)).
 
+New here? The G1–G7 references above are the plugin's seven **quality gates** (preregistration
+discipline, no p-hacking, no synthetic-as-human, no unethical deployment). For a plain-English
+introduction to what gates are, why they exist, and what each one checks, read
+**[`GATES.md`](GATES.md)**.
+
 ## Browsing the command surface
 
 For a single browsable reference document with every command's purpose, arguments, outputs, and
@@ -61,7 +66,8 @@ FORMULATE →[G1] BUILD →[G2] PILOT & DEPLOY →[G3/G4] ANALYZE →[G5/G6/G7] 
                          ╰────────────── iterate ──────────────╯
 ```
 
-Seven quality gates (G1-G7) gate transitions; rubrics live in [`config/gates/`](config/gates/).
+Seven quality gates (G1-G7) gate transitions — what each one checks is explained in
+[`GATES.md`](GATES.md); runnable rubrics live in [`config/gates/`](config/gates/).
 `/apsy:run` walks the whole pipeline autonomously (honoring `autonomy_level`; G4 is always hard).
 
 ## Project organization
