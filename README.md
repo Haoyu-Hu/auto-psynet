@@ -41,6 +41,10 @@ attestation + a spend cap required at every autonomy level (see
 
 ## Browsing the command surface
 
+For a single browsable reference document with every command's purpose, arguments, outputs, and
+the gates it triggers, see **[`COMMANDS.md`](COMMANDS.md)**. In-CLI, the same content is
+available via `/apsy:help`:
+
 ```bash
 /apsy:help                  # list every command + a one-line description
 /apsy:help <name>           # detailed help for one command (e.g. /apsy:help debug)
