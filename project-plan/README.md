@@ -34,6 +34,18 @@ sync with what's actually shipped. Read the documents in order.
 | 4 | [`04-skills-agents-commands.md`](04-skills-agents-commands.md) | The **essential skill set**, agent/persona library, slash commands, hooks, the (optional) MCP server, and the **PsyNet Knowledge Pack** (paradigm recipes + domain priors) — each prioritized P0/P1/P2 and mapped to a lifecycle stage. |
 | 5 | [`05-roadmap.md`](05-roadmap.md) | Phased build order, the MVP definition, milestones, risks, and open decisions to resolve. |
 
+### For users (top-level docs)
+
+The documents in this directory are the **design rationale**. The plain-English user-facing
+companions live one level up at the repo root:
+
+| Doc | Companion to | For users who want to know |
+|---|---|---|
+| [`../README.md`](../README.md) | this whole plan | how to install + the quick-start sequence |
+| [`../COMMANDS.md`](../COMMANDS.md) | doc 4 §4.3 | every `/apsy:*` command: purpose, args, outputs, gates triggered |
+| [`../GATES.md`](../GATES.md) | doc 3 §3.4 | what each of the seven quality gates (G1–G7) actually checks and why |
+| [`../AUTONOMY.md`](../AUTONOMY.md) | doc 3 §3.10 | the three autonomy levels (`supervised` / `semi_autonomous` / `autonomous`) and when to use which |
+
 ## Decisions locked at kickoff (2026-05-26)
 
 These four decisions, confirmed with the user, frame the entire plan:

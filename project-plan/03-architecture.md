@@ -143,6 +143,10 @@ runs the same sequence if the YAML runtime is disabled. Each stage:
 
 ## 3.4 Quality gates
 
+> **User-facing companion:** [`../GATES.md`](../GATES.md) — what each gate actually checks
+> (in plain English), the hard-vs-advisory model, and how gates interact with autonomy levels.
+> This section is the design rationale; the rubrics are in `config/gates/*.yaml`.
+
 Gates are scored checklists (`config/gates/*.yaml`) that consult the blind-spot library. Each returns a
 verdict the pipeline acts on, and emits a `{"decision":"block"|"continue","reason":...}`-style result a
 PostToolUse hook can enforce (octopus's quality-gate pattern).
@@ -300,6 +304,11 @@ anything else.
   `time_estimate` values usually hot-reload cleanly.
 
 ## 3.10 Autonomy & safety model
+
+> **User-facing companion:** [`../AUTONOMY.md`](../AUTONOMY.md) — the three levels in plain
+> English, when to use which, the four invariants that hold at every level (G4 always pauses,
+> autonomy never softens HARD items, synthetic data always labeled, preregistration deviations
+> always logged), and how to set/change the level via `bin/apsy-state.sh`.
 
 - **Levels** (in `state.json`, default supervised): `supervised` (pause at every gate),
   `semi_autonomous` (auto-advance through G1–G3 and analysis, pause at G4 + final), `autonomous`
