@@ -42,7 +42,9 @@ attestation + a spend cap required at every autonomy level (see
 New here? The G1–G7 references above are the plugin's seven **quality gates** (preregistration
 discipline, no p-hacking, no synthetic-as-human, no unethical deployment). For a plain-English
 introduction to what gates are, why they exist, and what each one checks, read
-**[`GATES.md`](GATES.md)**.
+**[`GATES.md`](GATES.md)**. How often the plugin pauses to ask you vs. acts on its own is
+controlled by the per-experiment **autonomy level** (defaults to `supervised`); see
+**[`AUTONOMY.md`](AUTONOMY.md)** for the three levels and how to switch between them.
 
 ## Browsing the command surface
 
@@ -68,7 +70,9 @@ FORMULATE →[G1] BUILD →[G2] PILOT & DEPLOY →[G3/G4] ANALYZE →[G5/G6/G7] 
 
 Seven quality gates (G1-G7) gate transitions — what each one checks is explained in
 [`GATES.md`](GATES.md); runnable rubrics live in [`config/gates/`](config/gates/).
-`/apsy:run` walks the whole pipeline autonomously (honoring `autonomy_level`; G4 is always hard).
+`/apsy:run` walks the whole pipeline autonomously, honoring `autonomy_level` (see
+[`AUTONOMY.md`](AUTONOMY.md) — `supervised` / `semi_autonomous` / `autonomous`; G4 is always
+hard at every level).
 
 ## Project organization
 

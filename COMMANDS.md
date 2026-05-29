@@ -382,6 +382,8 @@ Override the default EC2 instance type for provisioning. Default is auto-sized
 
 - [`README.md`](README.md) — install + quick start.
 - [`GATES.md`](GATES.md) — plain-English introduction to the G1–G7 quality gates.
+- [`AUTONOMY.md`](AUTONOMY.md) — the three autonomy levels and how they shape what each
+  pipeline command does without asking you.
 - [`project-plan/04-skills-agents-commands.md`](project-plan/04-skills-agents-commands.md)
   §4.3 — the design-doc command catalog with priorities (P0/P1/P2) and skill mapping.
 - [`config/gates/`](config/gates/) — runnable rubrics for G1–G7.

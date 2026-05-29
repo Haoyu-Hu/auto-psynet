@@ -188,6 +188,7 @@ we run another iteration?*
 
 ## Gates × autonomy levels
 
+The autonomy level is a per-experiment dial (full explainer: [`AUTONOMY.md`](AUTONOMY.md)).
 `/apsy:run` and the individual stage commands honor `autonomy_level` in `state.json`:
 
 | Autonomy level | Soft gates (G1, G2, G3, G5, G6) | G4 (deploy) | G7 (ship/iterate) |
@@ -218,6 +219,8 @@ plugin's strongest invariant: no deployment without explicit human sign-off.
 ## See also
 
 - [`README.md`](README.md) — install and quick start.
+- [`AUTONOMY.md`](AUTONOMY.md) — the three autonomy levels (`supervised` /
+  `semi_autonomous` / `autonomous`) and how they interact with the gates.
 - [`COMMANDS.md`](COMMANDS.md) — every `/apsy:*` command, with the gate(s) each one
   triggers.
 - [`project-plan/03-architecture.md`](project-plan/03-architecture.md) §3.4 — design-level
