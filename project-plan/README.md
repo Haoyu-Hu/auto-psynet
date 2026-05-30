@@ -46,6 +46,16 @@ companions live one level up at the repo root:
 | [`../GATES.md`](../GATES.md) | doc 3 §3.4 | what each of the seven quality gates (G1–G7) actually checks and why |
 | [`../AUTONOMY.md`](../AUTONOMY.md) | doc 3 §3.10 | the three autonomy levels (`supervised` / `semi_autonomous` / `autonomous`) and when to use which |
 
+### Related projects
+
+The plugin's logic is also available as a **Cursor Marketplace plugin** at
+[`auto-psynet-cursor`](https://github.com/Haoyu-Hu/auto-psynet-cursor) — same gates, autonomy
+model, paradigm recipes, ethics policy, and `bin/` engines; framework wiring adapted to Cursor's
+spec (`.cursor-plugin/plugin.json`, `commands/`, `skills/<name>/SKILL.md` per-dir, `agents/`,
+`rules/`, `hooks/hooks.json` in Cursor's schema). The two plugins share `assets/avatar.png` and
+the same `bin/apsy-common.sh` (which has a dual `${CLAUDE_PLUGIN_ROOT:-${CURSOR_PLUGIN_ROOT:-derive}}`
+fallback so the engines are byte-identical in either checkout).
+
 ## Decisions locked at kickoff (2026-05-26)
 
 These four decisions, confirmed with the user, frame the entire plan:

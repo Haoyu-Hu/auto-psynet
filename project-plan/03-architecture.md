@@ -52,9 +52,16 @@ Mirrors octopus's proven layout, scaled down and renamed. `${CLAUDE_PLUGIN_ROOT}
 ```
 auto-psynet/                          # the plugin repo (this repo)
 ├── .claude-plugin/
-│   ├── plugin.json                   # name:"apsy" (LOCKED), version, explicit skills[] + commands[]
+│   ├── plugin.json                   # name:"apsy" (LOCKED) + displayName + version + author +
+│   │                                 # homepage + repository + license + logo:"assets/avatar.png"
+│   │                                 # + keywords. Skills/commands auto-discover from skills/+commands/.
 │   ├── marketplace.json              # marketplace entry (name must match plugin.json)
 │   └── PLUGIN_NAME_LOCK.md           # why the name stays "apsy"
+├── assets/
+│   └── avatar.png                    # 1024x1024 brand mark — PsyNet-derived hub-and-spoke with
+│                                     # human + LLM-agent participant silhouettes (shared with the
+│                                     # Cursor port at github.com/Haoyu-Hu/auto-psynet-cursor)
+├── LICENSE                           # MIT
 ├── commands/                         # slash command .md files (see doc 04) — 25 commands
 ├── skills/                           # SKILL.md execution contracts (one dir each, see doc 04) — 32 skills
 │   ├── setup/ install/ update/ doctor/ status/
@@ -117,10 +124,14 @@ auto-psynet/                          # the plugin repo (this repo)
 > released plugin; recipe references resolve against the **installed** psynet package via `APSY_PSYNET_PATH`.
 
 **Manifest rules:** `plugin.json.name = "apsy"` is locked and equals the `/apsy:*` namespace; npm/repo
-name is separate (`auto-psynet`); `skills` and `commands` are explicit arrays in `plugin.json`; agents
-are auto-discovered from `agents/`; **hooks live in `hooks/hooks.json` next to the hook scripts** (not
-in `.claude-plugin/`). `tests/validate-assembly.sh` asserts every listed skill/command exists and
-frontmatter parses.
+name is separate (`auto-psynet`); skills + commands + agents auto-discover from the default directories
+(`skills/`, `commands/`, `agents/`); **hooks live in `hooks/hooks.json` next to the hook scripts** (not
+in `.claude-plugin/`); the manifest also carries cross-ecosystem metadata fields (`displayName`,
+`homepage`, `repository`, `logo`) — Claude Code formally recognizes the first three and ignores
+unknown fields like `logo` with a warning per spec, but the docs explicitly encourage keeping such
+fields so one `plugin.json` doubles as a Cursor or VS-Code manifest (we use this — the same logo +
+metadata works in the [`auto-psynet-cursor`](https://github.com/Haoyu-Hu/auto-psynet-cursor) port).
+`tests/validate-assembly.sh` asserts every discovered skill/command exists and frontmatter parses.
 
 ## 3.3 The pipeline (workflow-as-code)
 
